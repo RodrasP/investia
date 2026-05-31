@@ -296,6 +296,19 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
   const [replyInput, setReplyInput] = useState('');
   const [approveForm, setApproveForm] = useState({ name: '', description: '' });
 
+  // Question & CMS state
+  const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
+  const [newQuestion, setNewQuestion] = useState({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' });
+  const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
+  const [newAnswer, setNewAnswer] = useState({ text: '', text_en: '', is_correct: false });
+  const [editingCMSPage, setEditingCMSPage] = useState<any>(null);
+  const [cmsBlocks, setCmsBlocks] = useState<any[]>([]);
+
+  // Enrollment state
+  const [enrolledUsers, setEnrolledUsers] = useState<any[]>([]);
+  const [selectedUserAnswers, setSelectedUserAnswers] = useState<any[]>([]);
+  const [courseTab, setCourseTab] = useState<'lessons' | 'users'>('lessons');
+
   useEffect(() => {
     fetchCourses();
     fetchUsers();
@@ -488,6 +501,15 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
       jackpot_amount: mbSettings.jackpot_min,
       life_prob: (100 - mbSettings.prob_nothing - mbSettings.prob_trs_small - mbSettings.prob_jackpot) / 100
     };
+
+    const res = await fetch(`${API_BASE_URL}/api/shop/mystery-box/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) toast.success('Ajustes guardados');
+    else toast.error('Error al guardar ajustes');
+  };
   const renderChannels = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
        <div style={{ marginBottom: '35px' }}>
@@ -581,14 +603,6 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
        </div>
     </motion.div>
   ); 
-
-  const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
-  const [newQuestion, setNewQuestion] = useState({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' });
-  const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
-  const [newAnswer, setNewAnswer] = useState({ text: '', text_en: '', is_correct: false });
-
-  const [editingCMSPage, setEditingCMSPage] = useState<any>(null);
-  const [cmsBlocks, setCmsBlocks] = useState<any[]>([]);
 
   const handleSaveCMSContent = async () => {
     const res = await fetch(`${API_BASE_URL}/api/pages/${editingCMSPage.slug}`, {
@@ -850,10 +864,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
           </div>}
        </div>
     </motion.div>
-  )
-  const [enrolledUsers, setEnrolledUsers] = useState<any[]>([]);
-  const [selectedUserAnswers, setSelectedUserAnswers] = useState<any[]>([]);
-  const [courseTab, setCourseTab] = useState<'lessons' | 'users'>('lessons');
+  );
 
   const fetchEnrolledUsers = async (courseId: number) => {
     const res = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}/progress`, {
@@ -1585,4 +1596,3 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
   );
 }
 
-}
