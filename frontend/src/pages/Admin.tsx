@@ -1358,7 +1358,6 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
        </div>
     </motion.div>
   );
-               <thead style={{ background: 'var(--gray-bg)', borderBottom: '2px solid var(--border-color)' }}>
   const handleSaveCategory = async (cat: any) => {
     const url = cat.id ? `${API_BASE_URL}/api/settings/categories/${cat.id}` : `${API_BASE_URL}/api/settings/categories`;
     const method = cat.id ? 'PUT' : 'POST';
