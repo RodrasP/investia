@@ -829,62 +829,174 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
     </motion.div>
   );
 
+  const [enrolledUsers, setEnrolledUsers] = useState<any[]>([]);
+  const [selectedUserAnswers, setSelectedUserAnswers] = useState<any[]>([]);
+  const [courseTab, setCourseTab] = useState<'lessons' | 'users'>('lessons');
+
+  const fetchEnrolledUsers = async (courseId: number) => {
+    const res = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}/progress`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) setEnrolledUsers(await res.json());
+  };
+
+  const fetchUserAnswers = async (userId: number, courseId: number) => {
+    const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/courses/${courseId}/answers`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) setSelectedUserAnswers(await res.json());
+  };
+
+  const handleExpelUser = async (userId: number) => {
+    if (!window.confirm('¿Seguro que quieres expulsar a este usuario del curso? Perderá todo su progreso en él.')) return;
+    const res = await fetch(`${API_BASE_URL}/api/admin/courses/${selectedCourse.id}/enrollments/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) {
+      toast.success('Usuario expulsado');
+      fetchEnrolledUsers(selectedCourse.id);
+    }
+  };
+
+  const handleResetQuestion = async (userId: number, questionId: number) => {
+    if (!window.confirm('¿Reiniciar esta pregunta para el usuario?')) return;
+    const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/answers/question/${questionId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    if (res.ok) {
+      toast.success('Pregunta reiniciada');
+      fetchUserAnswers(userId, selectedCourse.id);
+    }
+  };
+
   const renderCourseDetails = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
              <button onClick={() => setView('courses')} className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }}><ChevronLeft size={20} /></button>
              <div>
-                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '900' }}>Gestión de Lecciones</h2>
-                <p style={{ margin: 0, color: 'var(--secondary-text)', fontSize: '14px' }}>Curso: <span style={{ color: 'var(--primary-red)', fontWeight: '700' }}>{selectedCourse?.title}</span></p>
+                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '900' }}>Panel del Curso</h2>
+                <p style={{ margin: 0, color: 'var(--secondary-text)', fontSize: '14px' }}>{selectedCourse?.title}</p>
              </div>
+          </div>
+          
+          <div style={{ display: 'flex', background: 'var(--gray-bg)', padding: '5px', borderRadius: '15px', gap: '5px' }}>
+             <button onClick={() => setCourseTab('lessons')} style={{ padding: '10px 25px', borderRadius: '12px', border: 'none', background: courseTab === 'lessons' ? 'white' : 'transparent', fontWeight: '800', cursor: 'pointer', boxShadow: courseTab === 'lessons' ? '0 5px 10px rgba(0,0,0,0.05)' : 'none' }}>LECCIONES</button>
+             <button onClick={() => { setCourseTab('users'); fetchEnrolledUsers(selectedCourse.id); }} style={{ padding: '10px 25px', borderRadius: '12px', border: 'none', background: courseTab === 'users' ? 'white' : 'transparent', fontWeight: '800', cursor: 'pointer', boxShadow: courseTab === 'users' ? '0 5px 10px rgba(0,0,0,0.05)' : 'none' }}>USUARIOS</button>
           </div>
        </div>
 
-       <div className="card" style={{ marginBottom: '40px', padding: '35px', borderRadius: '32px', border: '2px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}><Plus size={24} /> {editingLessonId ? 'EDITAR LECCIÓN' : 'NUEVA LECCIÓN'}</h3>
-          <form onSubmit={handleSaveLesson} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-             <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (ES)</label>
-                <input type="text" value={newLesson.title} onChange={e => setNewLesson({...newLesson, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
-             </div>
-             <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (EN)</label>
-                <input type="text" value={newLesson.title_en} onChange={e => setNewLesson({...newLesson, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
-             </div>
-             <div style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>DESCRIPCIÓN BREVE (ES)</label>
-                <textarea value={newLesson.description} onChange={e => setNewLesson({...newLesson, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} />
-             </div>
-             <div style={{ display: 'flex', gap: '15px', gridColumn: 'span 2' }}>
-                <button type="submit" className="btn-primary" style={{ flex: 2, padding: '15px', fontWeight: '900', letterSpacing: '1px' }}>GUARDAR LECCIÓN</button>
-                <button type="button" onClick={() => { setEditingLessonId(null); setNewLesson({ title: '', title_en: '', description: '', description_en: '', content: '', content_en: '', sort_order: 0 }); }} className="btn-secondary" style={{ flex: 1, padding: '15px' }}>LIMPIAR</button>
-             </div>
-          </form>
-       </div>
+       {courseTab === 'lessons' ? (
+         <>
+            {(editingLessonId !== null || newLesson.title !== '' || lessons.length === 0) && (
+                <div className="card" style={{ marginBottom: '40px', padding: '35px', borderRadius: '32px', border: '2px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+                  <h3 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}><Plus size={24} /> {editingLessonId ? 'EDITAR LECCIÓN' : 'NUEVA LECCIÓN'}</h3>
+                  <form onSubmit={handleSaveLesson} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (ES)</label>
+                        <input type="text" value={newLesson.title} onChange={e => setNewLesson({...newLesson, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (EN)</label>
+                        <input type="text" value={newLesson.title_en} onChange={e => setNewLesson({...newLesson, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
+                      </div>
+                      <div style={{ gridColumn: 'span 2' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>DESCRIPCIÓN BREVE (ES)</label>
+                        <textarea value={newLesson.description} onChange={e => setNewLesson({...newLesson, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} />
+                      </div>
+                      <div style={{ display: 'flex', gap: '15px', gridColumn: 'span 2' }}>
+                        <button type="submit" className="btn-primary" style={{ flex: 2, padding: '15px', fontWeight: '900', letterSpacing: '1px' }}>GUARDAR LECCIÓN</button>
+                        <button type="button" onClick={() => { setEditingLessonId(null); setNewLesson({ title: '', title_en: '', description: '', description_en: '', content: '', content_en: '', sort_order: 0 }); }} className="btn-secondary" style={{ flex: 1, padding: '15px' }}>LIMPIAR</button>
+                      </div>
+                  </form>
+                </div>
+            )}
 
-       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <h3 style={{ fontSize: '22px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-             <LayoutDashboard size={20} /> LECCIONES CONFIGURADAS ({lessons.length})
-          </h3>
-          {lessons.map((lesson, idx) => (
-            <div key={lesson.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 30px', background: 'var(--card-bg)', borderRadius: '24px', border: '2px solid var(--border-color)', transition: 'all 0.2s' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gray-bg)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '900', color: 'var(--primary-red)' }}>{idx + 1}</div>
-                  <div>
-                     <div style={{ fontWeight: '900', fontSize: '18px' }}>{lesson.title}</div>
-                     <div style={{ fontSize: '13px', color: 'var(--secondary-text)', marginTop: '2px' }}>{lesson.description?.substring(0, 100)}{lesson.description?.length > 100 ? '...' : ''}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <LayoutDashboard size={20} /> LECCIONES CONFIGURADAS ({lessons.length})
+                </h3>
+                {lessons.map((lesson, idx) => (
+                  <div key={lesson.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 30px', background: 'var(--card-bg)', borderRadius: '24px', border: '2px solid var(--border-color)', transition: 'all 0.2s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gray-bg)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '900', color: 'var(--primary-red)' }}>{idx + 1}</div>
+                        <div>
+                          <div style={{ fontWeight: '900', fontSize: '18px' }}>{lesson.title}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--secondary-text)', marginTop: '2px' }}>{lesson.description?.substring(0, 100)}{lesson.description?.length > 100 ? '...' : ''}</div>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button className="btn-secondary" style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px' }} onClick={() => fetchLessonDetails(lesson.id)}><Eye size={18} /> PREGUNTAS</button>
+                        <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => { setEditingLessonId(lesson.id); setNewLesson(lesson); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={18} /></button>
+                        <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px', color: 'var(--primary-red)' }} onClick={() => handleDeleteLesson(lesson.id)}><Trash size={18} /></button>
+                    </div>
+                  </div>
+                ))}
+                {lessons.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--secondary-text)', border: '2px dashed var(--border-color)' }}>Aún no has añadido lecciones a este curso.</div>}
+            </div>
+         </>
+       ) : (
+         <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+            <div className="card" style={{ padding: 0, overflow: 'hidden', borderRadius: '32px', border: '2px solid var(--border-color)' }}>
+               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead style={{ background: 'var(--gray-bg)' }}>
+                     <tr>
+                        <th style={{ padding: '20px 25px', fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)' }}>USUARIO</th>
+                        <th style={{ padding: '20px 25px', fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)' }}>PROGRESO</th>
+                        <th style={{ padding: '20px 25px', fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)', textAlign: 'right' }}>ACCIONES</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     {enrolledUsers.map(user => (
+                       <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '20px 25px' }}>
+                             <div style={{ fontWeight: '800' }}>{user.name}</div>
+                             <div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{user.email}</div>
+                          </td>
+                          <td style={{ padding: '20px 25px' }}>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <div style={{ flex: 1, height: '8px', background: 'var(--gray-bg)', borderRadius: '10px', overflow: 'hidden' }}>
+                                   <div style={{ height: '100%', background: 'var(--primary-green)', width: `${(user.completed_lessons / (user.total_lessons || 1)) * 100}%` }} />
+                                </div>
+                                <span style={{ fontWeight: '900', fontSize: '13px' }}>{user.completed_lessons} / {user.total_lessons}</span>
+                             </div>
+                          </td>
+                          <td style={{ padding: '20px 25px', textAlign: 'right' }}>
+                             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                <button className="btn-secondary" style={{ padding: '8px 15px', fontSize: '12px', fontWeight: '800' }} onClick={() => fetchUserAnswers(user.id, selectedCourse.id)}>VER RESPUESTAS</button>
+                                <button className="btn-secondary" style={{ padding: '8px 15px', fontSize: '12px', fontWeight: '800', color: 'var(--primary-red)' }} onClick={() => handleExpelUser(user.id)}>EXPULSAR</button>
+                             </div>
+                          </td>
+                       </tr>
+                     ))}
+                  </tbody>
+               </table>
+            </div>
+
+            {selectedUserAnswers.length > 0 && (
+               <div className="card" style={{ padding: '30px', borderRadius: '32px', border: '2px solid var(--primary-green)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                     <h3 style={{ margin: 0 }}>Respuestas de Usuario</h3>
+                     <button onClick={() => setSelectedUserAnswers([])} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--secondary-text)' }}><X size={20} /></button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                     {selectedUserAnswers.map(ans => (
+                       <div key={ans.ua_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', background: 'var(--gray-bg)', borderRadius: '15px' }}>
+                          <div>
+                             <div style={{ fontSize: '11px', fontWeight: '900', color: 'var(--secondary-text)' }}>LECCIÓN: {ans.lesson_title}</div>
+                             <div style={{ fontWeight: '800' }}>{ans.question_text}</div>
+                             <div style={{ fontSize: '13px', color: ans.is_correct ? 'var(--primary-green)' : 'var(--primary-red)', fontWeight: 'bold' }}>Respuesta: {ans.answer_text} {ans.is_correct ? '✅' : '❌'}</div>
+                          </div>
+                          <button className="btn-secondary" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--primary-red)' }} onClick={() => handleResetQuestion(ans.user_id, ans.question_id)}>REINICIAR PREGUNTA</button>
+                       </div>
+                     ))}
                   </div>
                </div>
-               <div style={{ display: 'flex', gap: '12px' }}>
-                  <button className="btn-secondary" style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px' }} onClick={() => fetchLessonDetails(lesson.id)}><Eye size={18} /> PREGUNTAS</button>
-                  <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => { setEditingLessonId(lesson.id); setNewLesson(lesson); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={18} /></button>
-                  <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px', color: 'var(--primary-red)' }} onClick={() => handleDeleteLesson(lesson.id)}><Trash size={18} /></button>
-               </div>
-            </div>
-          ))}
-          {lessons.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--secondary-text)', border: '2px dashed var(--border-color)' }}>Aún no has añadido lecciones a este curso.</div>}
-       </div>
+            )}
+         </div>
+       )}
     </motion.div>
   );
 

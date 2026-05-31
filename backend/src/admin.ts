@@ -267,4 +267,29 @@ router.delete('/courses/:courseId/enrollments/:userId', verifyToken, verifyAdmin
   });
 });
 
+// Reset a specific question for a user
+router.delete('/users/:userId/answers/question/:questionId', verifyToken, verifyAdmin, (req, res) => {
+  const { userId, questionId } = req.params;
+
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION');
+    try {
+      // 1. Delete the user's answer for this specific question
+      db.run('DELETE FROM user_answers WHERE user_id = ? AND question_id = ?', [userId, questionId]);
+
+      // 2. We don't necessarily want to remove user_progress or user_completed_courses 
+      // unless we want to force them to re-complete the whole lesson/course.
+      // Usually, deleting the answer is enough to let them try again in the UI.
+
+      db.run('COMMIT', (err) => {
+        if (err) throw err;
+        res.json({ message: 'Question reset successfully' });
+      });
+    } catch (e) {
+      db.run('ROLLBACK');
+      res.status(500).json({ message: 'Error resetting question' });
+    }
+  });
+});
+
 export default router;
