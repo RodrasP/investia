@@ -580,7 +580,9 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
           </div>
        </div>
     </motion.div>
-  )  const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
+  ); 
+
+  const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
   const [newQuestion, setNewQuestion] = useState({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' });
   const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
   const [newAnswer, setNewAnswer] = useState({ text: '', text_en: '', is_correct: false });
