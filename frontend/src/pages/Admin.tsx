@@ -829,13 +829,56 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
           <div className="card" style={{ marginBottom: '30px', padding: '30px', borderRadius: '24px', border: '2px solid var(--primary-red)' }}>
             <h3 style={{ marginBottom: '25px' }}>{editingCourseId ? 'Editar Curso' : 'Crear Nuevo Curso'}</h3>
             <form onSubmit={handleSaveCourse} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (ES)</label><input type="text" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required /></div>
-              <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (EN)</label><input type="text" value={newCourse.title_en} onChange={e => setNewCourse({...newCourse, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required /></div>
-              <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>DESCRIPCIÓN (ES)</label><textarea value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} required /></div>
-              <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>DIFICULTAD</label><select value={newCourse.difficulty} onChange={e => setNewCourse({...newCourse, difficulty: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}><option value="beginner">Principiante</option><option value="intermediate">Intermedio</option><option value="advanced">Avanzado</option></select></div>
-              <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>VISIBILIDAD</label><select value={newCourse.visibility} onChange={e => setNewCourse({...newCourse, visibility: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}><option value="public">Público</option><option value="private">Privado (Solo Admin)</option></select></div>
-              <div style={{ gridColumn: 'span 2' }}><label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>IMAGEN DEL CURSO</label><input type="file" onChange={e => setNewCourse({...newCourse, imageFile: e.target.files?.[0] || null})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} /></div>
-              <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}><button type="submit" className="btn-primary" style={{ flex: 1 }}>{editingCourseId ? 'ACTUALIZAR' : 'CREAR'}</button><button type="button" onClick={() => setShowForm(false)} className="btn-secondary" style={{ flex: 1 }}>CANCELAR</button></div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (ES)</label>
+                <input type="text" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (EN)</label>
+                <input type="text" value={newCourse.title_en} onChange={e => setNewCourse({...newCourse, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
+              </div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>DESCRIPCIÓN (ES)</label>
+                <textarea value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} required />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>CATEGORÍA</label>
+                <select value={newCourse.category_id} onChange={e => setNewCourse({...newCourse, category_id: parseInt(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>DIFICULTAD</label>
+                <select value={newCourse.difficulty} onChange={e => setNewCourse({...newCourse, difficulty: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}>
+                  <option value="beginner">Principiante</option>
+                  <option value="intermediate">Intermedio</option>
+                  <option value="advanced">Avanzado</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>PRECIO (TOROS)</label>
+                <input type="number" value={newCourse.points_price || 0} onChange={e => setNewCourse({...newCourse, points_price: parseInt(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>VISIBILIDAD</label>
+                <select value={newCourse.visibility} onChange={e => setNewCourse({...newCourse, visibility: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}>
+                  <option value="public">Público</option>
+                  <option value="private">Privado (Solo Admin)</option>
+                </select>
+              </div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>IMAGEN DEL CURSO</label>
+                <input type="file" onChange={e => setNewCourse({...newCourse, imageFile: e.target.files?.[0] || null})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
+                {editingCourseId && !newCourse.imageFile && selectedCourse?.image_url && (
+                   <p style={{ fontSize: '11px', marginTop: '5px', color: 'var(--secondary-text)' }}>Imagen actual: {selectedCourse.image_url}</p>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+                <button type="submit" className="btn-primary" style={{ flex: 1 }}>{editingCourseId ? 'ACTUALIZAR' : 'CREAR'}</button>
+                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary" style={{ flex: 1 }}>CANCELAR</button>
+              </div>
             </form>
           </div>
         )}
