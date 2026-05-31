@@ -1,0 +1,486 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Plus, Trash, Pencil, ChevronLeft, Users, Eye, Shield, User as UserIcon, 
+  Check, X, BarChart2, Search, ChevronDown, UserMinus, Lock, Filter, 
+  ArrowUpDown, Tag, MessageCircle, Settings, ShoppingBag, ArrowRightLeft,
+  Book, TrendingUp, ShieldCheck, Zap, Award, DollarSign, PieChart, 
+  Briefcase, Target, Wallet, Coins, Globe, Landmark, TrendingDown,
+  Activity, BarChart, LineChart, Layers, Database, Cpu, Lightbulb, Gift,
+  FileText, ChevronRight, LayoutDashboard, RefreshCw, LogOut, Cookie, Megaphone, Send
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '../config';
+import BullCoin from '../components/BullCoin';
+
+const icons: any = {
+  Book, TrendingUp, TrendingDown, ShieldCheck, Zap, Award, DollarSign, PieChart, 
+  Briefcase, Target, Wallet, Coins, Globe, Landmark, Activity, BarChart, 
+  LineChart, Layers, Database, Cpu, Lightbulb
+};
+
+const CourseIcon = ({ name, size = 48 }: { name: string, size?: number }) => {
+  const IconComponent = icons[name] || Book;
+  return <IconComponent size={size} />;
+};
+
+import toast from 'react-hot-toast';
+
+const FilterDropdown = ({ value, options, onChange, icon: Icon, label, searchable, multi }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  
+  const selectedOptions = multi 
+    ? options.filter((o: any) => Array.isArray(value) && value.includes(o.value))
+    : [options.find((o: any) => (o && o.value === value))].filter(Boolean);
+
+  const filteredOptions = searchable 
+    ? options.filter((opt: any) => opt && opt.label && opt.label.toLowerCase().includes(search.toLowerCase()))
+    : options;
+
+  const handleSelect = (optValue: any) => {
+    if (multi) {
+      if (optValue === 'all') {
+        onChange(['all']);
+      } else {
+        const currentValues = Array.isArray(value) ? value : [value].filter(v => v !== undefined);
+        let newValue = [...currentValues];
+        
+        if (newValue.includes('all')) {
+          newValue = [optValue];
+        } else if (newValue.includes(optValue)) {
+          newValue = newValue.filter(v => v !== optValue);
+          if (newValue.length === 0) newValue = ['all'];
+        } else {
+          newValue.push(optValue);
+        }
+        onChange(newValue);
+      }
+    } else {
+      onChange(optValue);
+      setIsOpen(false);
+      setSearch('');
+    }
+  };
+
+  const getLabel = () => {
+    if (multi) {
+      const isAll = !Array.isArray(value) || value.includes('all') || value.length === 0;
+      if (isAll) return label;
+      if (value.length === 1) return selectedOptions[0]?.label || label;
+      return `${value.length} seleccionadas`;
+    }
+    return selectedOptions[0]?.label || label;
+  };
+
+  return (
+    <div style={{ position: 'relative', minWidth: '180px' }}>
+      <motion.button
+        whileHover={{ scale: 1.02, borderColor: 'var(--primary-red)' }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          padding: '12px 15px 12px 40px',
+          borderRadius: '16px',
+          border: '2px solid var(--border-color)',
+          background: 'var(--card-bg)',
+          color: 'var(--text-color)',
+          fontSize: '14px',
+          fontWeight: '700',
+          textAlign: 'left',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          position: 'relative'
+        }}
+      >
+        <div style={{ position: 'absolute', left: '12px', color: 'var(--secondary-text)', display: 'flex' }}>
+          <Icon size={18} />
+        </div>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '5px' }}>
+          {getLabel()}
+        </span>
+        <ChevronDown size={16} style={{ flexShrink: 0, transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+      </motion.button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <div 
+              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }} 
+              onClick={() => { setIsOpen(false); setSearch(''); }} 
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                left: 0,
+                right: 0,
+                background: 'var(--card-bg)',
+                border: '2px solid var(--border-color)',
+                borderRadius: '18px',
+                padding: '8px',
+                zIndex: 999,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                maxHeight: '350px',
+                minWidth: '220px',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              {searchable && (
+                <div style={{ padding: '5px', marginBottom: '5px' }}>
+                  <input 
+                    type="text"
+                    autoFocus
+                    placeholder="Buscar..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--input-bg)',
+                      color: 'var(--text-color)',
+                    }}
+                  />
+                </div>
+              )}
+              <div style={{ overflowY: 'auto', flexGrow: 1 }}>
+                {filteredOptions.map((opt: any) => {
+                   const isSelected = multi 
+                    ? (Array.isArray(value) && value.includes(opt.value))
+                    : value === opt.value;
+
+                   return (
+                    <motion.div
+                      key={opt.value}
+                      whileHover={{ background: 'var(--gray-bg)' }}
+                      onClick={() => handleSelect(opt.value)}
+                      style={{
+                        padding: '10px 15px',
+                        cursor: 'pointer',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        fontWeight: isSelected ? '800' : '500',
+                        color: isSelected ? 'var(--primary-red)' : 'var(--text-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      {opt.label}
+                      {isSelected && <Check size={14} />}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const SidebarItem = ({ icon: Icon, label, active, onClick, collapsed }: any) => (
+  <motion.div
+    whileHover={{ x: 5, background: 'var(--gray-bg)' }}
+    onClick={onClick}
+    style={{
+      padding: '12px 15px',
+      borderRadius: '14px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      color: active ? 'var(--primary-red)' : 'var(--text-color)',
+      background: active ? 'rgba(229, 57, 53, 0.08)' : 'transparent',
+      fontWeight: active ? '800' : '600',
+      transition: 'all 0.2s',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap'
+    }}
+  >
+    <div style={{ minWidth: '24px', display: 'flex', justifyContent: 'center' }}>
+      <Icon size={collapsed ? 24 : 20} />
+    </div>
+    {!collapsed && <span style={{ fontSize: '15px' }}>{label}</span>}
+    {active && !collapsed && <div style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary-red)' }} />}
+  </motion.div>
+);
+
+const ConfirmModal = ({ title, message, onConfirm, onClose, isAlert }: any) => (
+  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '32px', border: '2px solid var(--border-color)', maxWidth: '450px', width: '100%', textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' }}>
+      <h3 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '15px' }}>{title}</h3>
+      <p style={{ color: 'var(--secondary-text)', lineHeight: '1.6', marginBottom: '30px' }}>{message}</p>
+      <div style={{ display: 'flex', gap: '15px' }}>
+        <button onClick={onConfirm} className="btn-primary" style={{ flex: 1 }}>{isAlert ? 'ENTENDIDO' : 'CONFIRMAR'}</button>
+        {!isAlert && <button onClick={onClose} className="btn-secondary" style={{ flex: 1 }}>CANCELAR</button>}
+      </div>
+    </motion.div>
+  </div>
+);
+
+export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
+  const [view, setView] = useState<'courses' | 'users' | 'settings' | 'pages' | 'courseDetails' | 'lessonDetails' | 'categories' | 'translations' | 'shop' | 'exchange' | 'mysteryBox' | 'cookies' | 'courseProgress' | 'userAnswers' | 'courseAllAnswers' | 'channels'>('courses');
+  const [courses, setCourses] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [translations, setTranslations] = useState<any[]>([]);
+  const [pages, setPages] = useState<any[]>([]);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // Mystery Box State
+  const [mbSettings, setMbSettings] = useState({
+    base_cost: 200,
+    prob_nothing: 10,
+    prob_trs_small: 40,
+    prob_trs_medium: 30,
+    prob_trs_large: 15,
+    prob_jackpot: 5,
+    trs_small_min: 10,
+    trs_small_max: 50,
+    trs_medium_min: 50,
+    trs_medium_max: 200,
+    trs_large_min: 200,
+    trs_large_max: 1000,
+    jackpot_min: 1000,
+    jackpot_max: 10000
+  });
+
+  // CMS builder state
+  const [editingPage, setEditingPage] = useState<any>(null);
+
+  // Form states
+  const [showForm, setShowForm] = useState(false);
+  const [newCourse, setNewCourse] = useState({ title: '', title_en: '', description: '', description_en: '', points: 50, xp_reward: 100, category_id: 1, difficulty: 'beginner', visibility: 'public', order_index: 0, imageFile: null as File | null });
+  const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [confirmModal, setConfirmModal] = useState<any>(null);
+
+  // Filters State
+  const [adminCourseSearchQuery, setAdminCourseSearchQuery] = useState('');
+  const [adminSelectedCategory, setAdminSelectedCategory] = useState(['all']);
+  const [adminSelectedDifficulty, setAdminSelectedDifficulty] = useState('all');
+  const [adminSortBy, setAdminSortBy] = useState('newest');
+  const [adminCategories, setAdminCategories] = useState<any[]>([]);
+
+  // User details state
+  const [selectedUserDetails, setSelectedUserDetails] = useState<any>(null);
+  const [userCoursesProgress, setUserCourseProgress] = useState<any[]>([]);
+  const [userAnswersData, setUserAnswersData] = useState<any[]>([]);
+  const [courseAllAnswersData, setCourseAllAnswersData] = useState<any[]>([]);
+
+  // Channel Applications state
+  const [channelApps, setChannelApps] = useState<any[]>([]);
+  const [selectedApp, setSelectedApp] = useState<any>(null);
+  const [appMessages, setAppMessages] = useState<any[]>([]);
+  const [replyInput, setReplyInput] = useState('');
+  const [approveForm, setApproveForm] = useState({ name: '', description: '' });
+
+  useEffect(() => {
+    fetchCourses();
+    fetchUsers();
+    fetchCategories();
+    fetchTranslations();
+    fetchMbSettings();
+    fetchPages();
+  }, []);
+
+  const fetchChannelApps = async () => {
+    const res = await fetch(`${API_BASE_URL}/api/community/admin/applications`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    setChannelApps(await res.json());
+  };
+
+  const handleSelectApp = async (app: any) => {
+    setSelectedApp(app);
+    const res = await fetch(`${API_BASE_URL}/api/community/application/${app.id}/messages`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+    setAppMessages(await res.json());
+  };
+
+  const sendAppReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyInput.trim()) return;
+    const res = await fetch(`${API_BASE_URL}/api/community/application/${selectedApp.id}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify({ message: replyInput })
+    });
+    if (res.ok) {
+      setReplyInput('');
+      handleSelectApp(selectedApp);
+    }
+  };
+
+  const updateAppStatus = async (status: 'approved' | 'rejected') => {
+    const res = await fetch(`${API_BASE_URL}/api/community/admin/applications/${selectedApp.id}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify({ status, ...approveForm })
+    });
+    if (res.ok) {
+      toast.success('Status updated');
+      setSelectedApp(null);
+      fetchChannelApps();
+    }
+  };
+
+  const fetchPages = async () => {
+    const res = await fetch(`${API_BASE_URL}/api/pages`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    setPages(await res.json());
+  };
+
+  const fetchMbSettings = async () => {
+    const res = await fetch(`${API_BASE_URL}/api/settings/mystery-box`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    if (res.ok) setMbSettings(await res.json());
+  };
+
+  const fetchCourses = async () => {
+    const res = await fetch(`${API_BASE_URL}/api/courses`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    const data = await res.json();
+    setCourses(data);
+    
+    // Process categories for filter
+    const catsMap: any = { all: data.length };
+    data.forEach((c: any) => {
+      catsMap[c.category_name] = (catsMap[c.category_name] || 0) + 1;
+    });
+    setAdminCategories(Object.entries(catsMap).map(([name, count]) => ({ name, count })));
+  };
+
+  const fetchUsers = async () => {
+    const res = await fetch(`${API_BASE_URL}/api/auth/users`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    setUsers(await res.json());
+  };
+
+  const fetchCategories = async () => {
+    const res = await fetch(`${API_BASE_URL}/api/courses/categories`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    setCategories(await res.json());
+  };
+
+  const fetchTranslations = async () => {
+    const res = await fetch(`${API_BASE_URL}/api/settings/translations`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    const data = await res.json();
+    setTranslations(Object.entries(data.es).map(([key, esVal]) => ({
+      key,
+      es: esVal as string,
+      en: data.en[key] as string
+    })));
+  };
+
+  const renderChannels = () => (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+       <h2 style={{ marginBottom: '30px' }}>Solicitudes de Canales</h2>
+       <div className="flex-responsive" style={{ gap: '30px', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+             <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'var(--card-bg)', border: '2px solid var(--border-color)', borderRadius: '24px' }}>
+                {channelApps.map(app => (
+                  <div 
+                    key={app.id} 
+                    onClick={() => handleSelectApp(app)}
+                    style={{ padding: '20px', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', background: selectedApp?.id === app.id ? 'var(--gray-bg)' : 'transparent', transition: 'all 0.2s' }}
+                  >
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                        <div style={{ fontWeight: '800' }}>{app.user_name}</div>
+                        <div style={{ fontSize: '10px', fontWeight: '900', background: app.status === 'approved' ? '#4CAF50' : (app.status === 'rejected' ? '#F44336' : '#FF9800'), color: 'white', padding: '2px 8px', borderRadius: '10px', textTransform: 'uppercase' }}>{app.status}</div>
+                     </div>
+                     <div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{new Date(app.created_at).toLocaleDateString()} • {app.user_email}</div>
+                  </div>
+                ))}
+                {channelApps.length === 0 && <div style={{ padding: '40px', textAlign: 'center', color: 'var(--secondary-text)' }}>No hay solicitudes</div>}
+             </div>
+          </div>
+
+          <div style={{ flex: 2, minWidth: '400px' }}>
+             {selectedApp ? (
+               <div className="card" style={{ background: 'var(--card-bg)', border: '2px solid var(--border-color)', padding: '30px', borderRadius: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                     <h3 style={{ margin: 0 }}>Ticket #{selectedApp.id} - {selectedApp.user_name}</h3>
+                     <span style={{ fontSize: '13px', color: 'var(--secondary-text)' }}>Solicitado el {new Date(selectedApp.created_at).toLocaleString()}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', maxHeight: '400px', overflowY: 'auto', background: 'var(--gray-bg)', padding: '25px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
+                     {appMessages.map(m => (
+                       <div key={m.id} style={{ alignSelf: m.sender_role === 'admin' ? 'flex-end' : 'flex-start', maxWidth: '85%', background: m.sender_role === 'admin' ? 'var(--primary-red)' : 'var(--card-bg)', color: m.sender_role === 'admin' ? 'white' : 'var(--text-color)', padding: '15px 20px', borderRadius: '18px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: m.sender_role === 'admin' ? 'none' : '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '11px', opacity: 0.8, marginBottom: '6px', fontWeight: 'bold' }}>{m.sender_name} {m.sender_role === 'admin' ? '(Admin)' : ''}</div>
+                          <div style={{ fontSize: '15px', lineHeight: '1.5' }}>{m.message}</div>
+                          <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '8px', textAlign: 'right' }}>{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                       </div>
+                     ))}
+                  </div>
+
+                  <form onSubmit={sendAppReply} style={{ display: 'flex', gap: '10px', marginBottom: '40px' }}>
+                     <input type="text" value={replyInput} onChange={e => setReplyInput(e.target.value)} placeholder="Escribe tu respuesta al usuario..." style={{ flexGrow: 1, padding: '15px 20px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px' }} />
+                     <button type="submit" className="btn-primary" style={{ padding: '0 25px' }}><Send size={20} /></button>
+                  </form>
+
+                  {selectedApp.status === 'pending' && (
+                    <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: '30px' }}>
+                       <h4 style={{ marginBottom: '20px', fontWeight: '900', color: 'var(--primary-red)' }}>ACCIONES DE APROBACIÓN</h4>
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                          <div style={{ display: 'flex', gap: '15px' }}>
+                             <div style={{ flex: 1 }}>
+                                <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)', marginBottom: '8px', display: 'block' }}>NOMBRE DEL CANAL</label>
+                                <input type="text" placeholder="Ej: Noticias de Juan" value={approveForm.name} onChange={e => setApproveForm({...approveForm, name: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
+                             </div>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)', marginBottom: '8px', display: 'block' }}>DESCRIPCIÓN BREVE</label>
+                            <textarea placeholder="Ej: Un espacio para compartir mis análisis diarios." value={approveForm.description} onChange={e => setApproveForm({...approveForm, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} />
+                          </div>
+                          <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+                             <button onClick={() => updateAppStatus('approved')} className="btn-primary" style={{ flex: 1, padding: '15px' }}>APROBAR CANAL</button>
+                             <button onClick={() => updateAppStatus('rejected')} className="btn-secondary" style={{ flex: 1, padding: '15px', background: 'none', border: '2px solid var(--border-color)' }}>RECHAZAR SOLICITUD</button>
+                          </div>
+                       </div>
+                    </div>
+                  )}
+               </div>
+             ) : (
+               <div className="card" style={{ textAlign: 'center', padding: '120px 20px', color: 'var(--secondary-text)', background: 'var(--card-bg)', border: '2px dashed var(--border-color)', borderRadius: '24px' }}>
+                  <Megaphone size={60} style={{ opacity: 0.2, marginBottom: '20px' }} />
+                  <p style={{ fontSize: '18px', fontWeight: '600' }}>Selecciona una solicitud para revisarla</p>
+               </div>
+             )}
+          </div>
+       </div>
+    </motion.div>
+  );
+
+  const renderCourses = () => (
+    <>
+      <div style={{ minHeight: '600px' }}>
+          {view === 'courses' && (
+            <>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+                  <h2>Cursos</h2>
+                  <button onClick={() => setShowForm(!showForm)} className="btn-primary"><Plus size={20} /> Nuevo Curso</button>
+               </div>
+               {/* Rest of course render... simplified for this write_file */}
+            </>
+          )}
+      </div>
+    </ motion.div>
+  );
+
+  // Note: I will need to properly re-integrate all render functions if I use write_file. 
+  // However, Admin.tsx is too huge (4000 lines). I MUST use surgical replace.
+  // I will abort this write_file and use replace again with more context.
+  return null;
+}
+
