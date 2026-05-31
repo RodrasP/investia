@@ -488,91 +488,99 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
       jackpot_amount: mbSettings.jackpot_min,
       life_prob: (100 - mbSettings.prob_nothing - mbSettings.prob_trs_small - mbSettings.prob_jackpot) / 100
     };
-    const res = await fetch(`${API_BASE_URL}/api/shop/mystery-box/settings`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-      body: JSON.stringify(body)
-    });
-    if (res.ok) toast.success('Ajustes guardados');
-    else toast.error('Error al guardar ajustes');
-  };
-
   const renderChannels = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-       <h2 style={{ marginBottom: '30px' }}>Solicitudes de Canales</h2>
-       <div className="flex-responsive" style={{ gap: '30px', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1, minWidth: '300px' }}>
-             <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'var(--card-bg)', border: '2px solid var(--border-color)', borderRadius: '24px' }}>
-                {channelApps.map(app => (
-                  <div key={app.id} onClick={() => handleSelectApp(app)} style={{ padding: '20px', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', background: selectedApp?.id === app.id ? 'var(--gray-bg)' : 'transparent', transition: 'all 0.2s' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                        <div style={{ fontWeight: '800' }}>{app.user_name}</div>
-                        <div style={{ fontSize: '10px', fontWeight: '900', background: app.status === 'approved' ? '#4CAF50' : (app.status === 'rejected' ? '#F44336' : '#FF9800'), color: '#FFFFFF', padding: '2px 8px', borderRadius: '10px', textTransform: 'uppercase' }}>{app.status}</div>
-                     </div>
-                     <div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{new Date(app.created_at).toLocaleDateString()} • {app.user_email}</div>
-                  </div>
-                ))}
-                {channelApps.length === 0 && <div style={{ padding: '40px', textAlign: 'center', color: 'var(--secondary-text)' }}>No hay solicitudes</div>}
+       <div style={{ marginBottom: '35px' }}>
+          <h2 style={{ fontSize: '32px', fontWeight: '950', margin: 0 }}>Gestión de Canales</h2>
+          <p style={{ color: 'var(--secondary-text)', margin: '5px 0 0', fontSize: '15px' }}>Revisa solicitudes de comunidad y aprueba nuevos creadores</p>
+       </div>
+
+       <div className="flex-responsive" style={{ gap: '35px', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1, minWidth: '320px' }}>
+             <div className="card" style={{ padding: '15px', background: 'var(--card-bg)', border: '2px solid var(--border-color)', borderRadius: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                <div style={{ padding: '15px 20px', fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)', letterSpacing: '1px' }}>SOLICITUDES ENTRANTES</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                   {channelApps.map(app => (
+                     <motion.div 
+                        key={app.id} 
+                        whileHover={{ scale: 1.02 }}
+                        onClick={() => handleSelectApp(app)} 
+                        style={{ padding: '20px', borderRadius: '22px', cursor: 'pointer', background: selectedApp?.id === app.id ? 'rgba(229, 57, 53, 0.08)' : 'var(--gray-bg)', border: selectedApp?.id === app.id ? '2px solid var(--primary-red)' : '2px solid transparent', transition: 'all 0.2s' }}
+                     >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
+                           <div style={{ fontWeight: '900', fontSize: '16px' }}>{app.user_name}</div>
+                           <div style={{ fontSize: '9px', fontWeight: '950', background: app.status === 'approved' ? 'var(--primary-green)' : (app.status === 'rejected' ? 'var(--primary-red)' : '#FF9800'), color: 'white', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{app.status}</div>
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--secondary-text)', fontWeight: '700' }}>{new Date(app.created_at).toLocaleDateString()} • {app.user_email}</div>
+                     </motion.div>
+                   ))}
+                </div>
+                {channelApps.length === 0 && <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--secondary-text)', fontSize: '14px', fontWeight: '700' }}>No hay solicitudes pendientes</div>}
              </div>
           </div>
 
-          <div style={{ flex: 2, minWidth: '400px' }}>
+          <div style={{ flex: 2, minWidth: '450px' }}>
              {selectedApp ? (
-               <div className="card" style={{ background: 'var(--card-bg)', border: '2px solid var(--border-color)', padding: '30px', borderRadius: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                     <h3 style={{ margin: 0 }}>Ticket #{selectedApp.id} - {selectedApp.user_name}</h3>
-                     <span style={{ fontSize: '13px', color: 'var(--secondary-text)' }}>Solicitado el {new Date(selectedApp.created_at).toLocaleString()}</span>
+               <div className="card" style={{ background: 'var(--card-bg)', border: '2px solid var(--border-color)', padding: '40px', borderRadius: '35px', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px', borderBottom: '2px solid var(--gray-bg)', paddingBottom: '20px' }}>
+                     <div>
+                        <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '950' }}>TICKET #{selectedApp.id}</h3>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '5px', alignItems: 'center' }}>
+                           <UserIcon size={14} color="var(--primary-red)" />
+                           <span style={{ fontSize: '14px', fontWeight: '800' }}>{selectedApp.user_name}</span>
+                        </div>
+                     </div>
+                     <span style={{ fontSize: '13px', color: 'var(--secondary-text)', fontWeight: '700' }}>{new Date(selectedApp.created_at).toLocaleString()}</span>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', maxHeight: '400px', overflowY: 'auto', background: 'var(--gray-bg)', padding: '25px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', margin: '30px 0', maxHeight: '500px', overflowY: 'auto', background: 'var(--gray-bg)', padding: '30px', borderRadius: '25px', border: '1px solid var(--border-color)' }}>
                      {appMessages.map(m => (
-                       <div key={m.id} style={{ alignSelf: m.sender_role === 'admin' ? 'flex-end' : 'flex-start', maxWidth: '85%', background: m.sender_role === 'admin' ? 'var(--primary-red)' : 'var(--card-bg)', color: m.sender_role === 'admin' ? 'white' : 'var(--text-color)', padding: '15px 20px', borderRadius: '18px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: m.sender_role === 'admin' ? 'none' : '1px solid var(--border-color)' }}>
-                          <div style={{ fontSize: '11px', opacity: 0.8, marginBottom: '6px', fontWeight: 'bold' }}>{m.sender_name} {m.sender_role === 'admin' ? '(Admin)' : ''}</div>
-                          <div style={{ fontSize: '15px', lineHeight: '1.5' }}>{m.message}</div>
-                          <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '8px', textAlign: 'right' }}>{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                       <div key={m.id} style={{ alignSelf: m.sender_role === 'admin' ? 'flex-end' : 'flex-start', maxWidth: '85%', background: m.sender_role === 'admin' ? 'var(--primary-red)' : 'var(--card-bg)', color: m.sender_role === 'admin' ? 'white' : 'var(--text-color)', padding: '18px 25px', borderRadius: '22px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', border: m.sender_role === 'admin' ? 'none' : '2px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '11px', opacity: 0.8, marginBottom: '8px', fontWeight: '950', textTransform: 'uppercase' }}>{m.sender_name} {m.sender_role === 'admin' ? '(Staff)' : ''}</div>
+                          <div style={{ fontSize: '16px', lineHeight: '1.6', fontWeight: '600' }}>{m.message}</div>
+                          <div style={{ fontSize: '10px', opacity: 0.6, marginTop: '10px', textAlign: 'right', fontWeight: '800' }}>{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                        </div>
                      ))}
                   </div>
-                  <form onSubmit={sendAppReply} style={{ display: 'flex', gap: '10px', marginBottom: '40px' }}>
-                     <input type="text" value={replyInput} onChange={e => setReplyInput(e.target.value)} placeholder="Escribe tu respuesta al usuario..." style={{ flexGrow: 1, padding: '15px 20px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px' }} />
-                     <button type="submit" className="btn-primary" style={{ padding: '0 25px' }}><Send size={20} /></button>
+
+                  <form onSubmit={sendAppReply} style={{ display: 'flex', gap: '15px', marginBottom: '45px' }}>
+                     <input type="text" value={replyInput} onChange={e => setReplyInput(e.target.value)} placeholder="Redacta una respuesta oficial..." style={{ flexGrow: 1, padding: '18px 25px', borderRadius: '18px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '16px', fontWeight: '600' }} />
+                     <button type="submit" className="btn-primary" style={{ width: '60px', height: '60px', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Send size={24} /></button>
                   </form>
+
                   {selectedApp.status === 'pending' && (
-                    <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: '30px' }}>
-                       <h4 style={{ marginBottom: '20px', fontWeight: '900', color: 'var(--primary-red)' }}>ACCIONES DE APROBACIÓN</h4>
-                       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                          <div style={{ display: 'flex', gap: '15px' }}>
-                             <div style={{ flex: 1 }}>
-                                <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)', marginBottom: '8px', display: 'block' }}>NOMBRE DEL CANAL</label>
-                                <input type="text" placeholder="Ej: Noticias de Juan" value={approveForm.name} onChange={e => setApproveForm({...approveForm, name: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
+                    <div style={{ borderTop: '3px solid var(--gray-bg)', paddingTop: '35px' }}>
+                       <h4 style={{ marginBottom: '25px', fontWeight: '950', color: 'var(--primary-red)', letterSpacing: '1px', fontSize: '14px' }}>PANEL DE APROBACIÓN FINAL</h4>
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                             <div>
+                                <label style={{ fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>NOMBRE PÚBLICO DEL CANAL</label>
+                                <input type="text" placeholder="Ej: Análisis de Inversión" value={approveForm.name} onChange={e => setApproveForm({...approveForm, name: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '700' }} />
+                             </div>
+                             <div>
+                                <label style={{ fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', marginBottom: '10px', display: 'block', textTransform: 'uppercase' }}>DESCRIPCIÓN COMERCIAL</label>
+                                <textarea placeholder="Describe el propósito del canal para los usuarios..." value={approveForm.description} onChange={e => setApproveForm({...approveForm, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '100px', fontWeight: '600' }} />
                              </div>
                           </div>
-                          <div>
-                            <label style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)', marginBottom: '8px', display: 'block' }}>DESCRIPCIÓN BREVE</label>
-                            <textarea placeholder="Ej: Un espacio para compartir mis análisis diarios." value={approveForm.description} onChange={e => setApproveForm({...approveForm, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} />
-                          </div>
                           <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
-                             <button onClick={() => updateAppStatus('approved')} className="btn-primary" style={{ flex: 1, padding: '15px' }}>APROBAR CANAL</button>
-                             <button onClick={() => updateAppStatus('rejected')} className="btn-secondary" style={{ flex: 1, padding: '15px', background: 'none', border: '2px solid var(--border-color)' }}>RECHAZAR SOLICITUD</button>
+                             <button onClick={() => updateAppStatus('approved')} className="btn-primary" style={{ flex: 1, padding: '18px', fontWeight: '950', letterSpacing: '1px' }}>APROBAR Y CREAR CANAL</button>
+                             <button onClick={() => updateAppStatus('rejected')} className="btn-secondary" style={{ flex: 1, padding: '18px', fontWeight: '800', border: '2px solid var(--border-color)', background: 'transparent', color: 'var(--primary-red)' }}>RECHAZAR SOLICITUD</button>
                           </div>
                        </div>
                     </div>
                   )}
                </div>
              ) : (
-               <div className="card" style={{ textAlign: 'center', padding: '120px 20px', color: 'var(--secondary-text)', background: 'var(--card-bg)', border: '2px dashed var(--border-color)', borderRadius: '24px' }}>
-                  <Megaphone size={60} style={{ opacity: 0.2, marginBottom: '20px' }} />
-                  <p style={{ fontSize: '18px', fontWeight: '600' }}>Selecciona una solicitud para revisarla</p>
+               <div className="card" style={{ textAlign: 'center', padding: '150px 40px', color: 'var(--secondary-text)', background: 'var(--card-bg)', border: '3px dashed var(--border-color)', borderRadius: '35px' }}>
+                  <Megaphone size={64} style={{ opacity: 0.15, marginBottom: '25px' }} />
+                  <p style={{ fontSize: '20px', fontWeight: '800' }}>Gestor de Solicitudes</p>
+                  <p style={{ fontSize: '15px' }}>Selecciona un ticket de la lista para ver el historial y tomar una decisión.</p>
                </div>
              )}
           </div>
        </div>
     </motion.div>
-  );
-
-  const [editingLessonId, setEditingLessonId] = useState<number | null>(null);
-  const [newLesson, setNewLesson] = useState({ title: '', title_en: '', description: '', description_en: '', content: '', content_en: '', sort_order: 0 });
-
-  const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
+  )  const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
   const [newQuestion, setNewQuestion] = useState({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' });
   const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
   const [newAnswer, setNewAnswer] = useState({ text: '', text_en: '', is_correct: false });
@@ -713,122 +721,134 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
 
   const renderLessonDetails = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '35px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-             <button onClick={() => setView('courseDetails')} className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }}><ChevronLeft size={20} /></button>
+             <button onClick={() => setView('courseDetails')} className="btn-secondary" style={{ padding: '10px', borderRadius: '12px', background: 'var(--card-bg)' }}><ChevronLeft size={20} /></button>
              <div>
-                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '900' }}>Gestión de Preguntas</h2>
-                <p style={{ margin: 0, color: 'var(--secondary-text)', fontSize: '14px' }}>Lección: <span style={{ color: 'var(--primary-red)', fontWeight: '700' }}>{selectedLesson?.title}</span></p>
+                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '950' }}>Banco de Preguntas</h2>
+                <p style={{ margin: 0, color: 'var(--secondary-text)', fontSize: '14px', fontWeight: '700' }}>Lección: <span style={{ color: 'var(--primary-red)' }}>{selectedLesson?.title}</span></p>
              </div>
           </div>
        </div>
 
-       <div className="card" style={{ marginBottom: '40px', padding: '35px', borderRadius: '32px', border: '2px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}><Plus size={24} /> {editingQuestionId ? 'EDITAR PREGUNTA' : 'NUEVA PREGUNTA'}</h3>
+       <div className="card" style={{ marginBottom: '45px', padding: '40px', borderRadius: '35px', border: '3px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 25px 50px rgba(0,0,0,0.15)' }}>
+          <h3 style={{ marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '950', color: 'var(--primary-red)' }}>
+             {editingQuestionId ? <Pencil size={24} /> : <Plus size={24} />} 
+             {editingQuestionId ? 'EDITAR PREGUNTA EXISTENTE' : 'CREAR NUEVA PREGUNTA'}
+          </h3>
           
-          <form onSubmit={handleSaveQuestion} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <form onSubmit={handleSaveQuestion} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
                 <div style={{ gridColumn: 'span 2' }}>
-                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TEXTO DE LA PREGUNTA (ES)</label>
-                   <textarea placeholder="Ej: ¿Qué es el interés compuesto?" value={newQuestion.text} onChange={e => setNewQuestion({...newQuestion, text: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px', fontSize: '16px' }} required />
+                   <label style={{ display: 'block', marginBottom: '10px', fontWeight: '950', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '0.5px' }}>ENUNCIADO DE LA PREGUNTA (ESPAÑOL)</label>
+                   <textarea placeholder="Ej: ¿Cuál es el principal beneficio de diversificar una cartera?" value={newQuestion.text} onChange={e => setNewQuestion({...newQuestion, text: e.target.value})} style={{ width: '100%', padding: '18px', borderRadius: '20px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '90px', fontSize: '16px', lineHeight: '1.5', fontWeight: '700' }} required />
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TEXTO DE LA PREGUNTA (EN)</label>
-                   <textarea placeholder="Ej: What is compound interest?" value={newQuestion.text_en} onChange={e => setNewQuestion({...newQuestion, text_en: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px', fontSize: '16px' }} required />
+                   <label style={{ display: 'block', marginBottom: '10px', fontWeight: '950', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '0.5px' }}>QUESTION TEXT (ENGLISH)</label>
+                   <textarea placeholder="Ej: What is the main benefit of diversifying a portfolio?" value={newQuestion.text_en} onChange={e => setNewQuestion({...newQuestion, text_en: e.target.value})} style={{ width: '100%', padding: '18px', borderRadius: '20px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '90px', fontSize: '16px', lineHeight: '1.5', fontWeight: '700' }} required />
                 </div>
                 
                 <div>
-                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TIPO DE PREGUNTA</label>
-                   <select value={newQuestion.type} onChange={e => setNewQuestion({...newQuestion, type: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '700' }}>
-                      <option value="multiple_choice">Opción Múltiple</option>
+                   <label style={{ display: 'block', marginBottom: '10px', fontWeight: '950', fontSize: '12px', color: 'var(--secondary-text)' }}>MECÁNICA DE RESPUESTA</label>
+                   <select value={newQuestion.type} onChange={e => setNewQuestion({...newQuestion, type: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800' }}>
+                      <option value="multiple_choice">Opción Múltiple (Botones)</option>
                       <option value="true_false">Verdadero / Falso</option>
-                      <option value="text_input">Respuesta de Texto</option>
+                      <option value="text_input">Entrada de Texto Libre</option>
                    </select>
                 </div>
 
-                <div style={{ display: 'flex', gap: '15px' }}>
+                <div style={{ display: 'flex', gap: '20px' }}>
                    <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>DIFICULTAD</label>
-                      <select value={newQuestion.difficulty} onChange={e => setNewQuestion({...newQuestion, difficulty: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '700' }}>
-                         <option value="easy">Fácil (L1)</option>
-                         <option value="medium">Medio (L2)</option>
-                         <option value="hard">Difícil (L3)</option>
+                      <label style={{ display: 'block', marginBottom: '10px', fontWeight: '950', fontSize: '12px', color: 'var(--secondary-text)' }}>NIVEL DE DIFICULTAD</label>
+                      <select value={newQuestion.difficulty} onChange={e => setNewQuestion({...newQuestion, difficulty: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800' }}>
+                         <option value="easy">Principiante (L1)</option>
+                         <option value="medium">Intermedio (L2)</option>
+                         <option value="hard">Experto (L3)</option>
                       </select>
                    </div>
-                   <div style={{ width: '120px' }}>
-                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>PUNTOS</label>
-                      <input type="number" value={newQuestion.points} onChange={e => setNewQuestion({...newQuestion, points: parseInt(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '900', textAlign: 'center' }} />
+                   <div style={{ width: '140px' }}>
+                      <label style={{ display: 'block', marginBottom: '10px', fontWeight: '950', fontSize: '12px', color: 'var(--secondary-text)' }}>VALOR (PTS)</label>
+                      <input type="number" value={newQuestion.points} onChange={e => setNewQuestion({...newQuestion, points: parseInt(e.target.value)})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '950', textAlign: 'center', fontSize: '18px' }} />
                    </div>
                 </div>
              </div>
 
              <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
-                <button type="submit" className="btn-primary" style={{ flex: 2, padding: '15px', fontSize: '14px', letterSpacing: '1px' }}>{editingQuestionId ? 'ACTUALIZAR PREGUNTA' : 'GUARDAR PREGUNTA'}</button>
-                <button type="button" onClick={() => { setEditingQuestionId(null); setNewQuestion({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' }); }} className="btn-secondary" style={{ flex: 1, padding: '15px' }}>LIMPIAR FORMULARIO</button>
+                <button type="submit" className="btn-primary" style={{ flex: 2, padding: '20px', fontSize: '15px', fontWeight: '950', letterSpacing: '1px' }}>{editingQuestionId ? 'ACTUALIZAR PREGUNTA' : 'AÑADIR AL BANCO'}</button>
+                <button type="button" onClick={() => { setEditingQuestionId(null); setNewQuestion({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' }); }} className="btn-secondary" style={{ flex: 1, padding: '20px', fontWeight: '800' }}>LIMPIAR</button>
              </div>
           </form>
        </div>
 
-       <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-          <h3 style={{ fontSize: '22px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px' }}>
-             <Search size={20} /> PREGUNTAS ACTUALES ({questions.length})
+       <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+          <h3 style={{ fontSize: '24px', fontWeight: '950', display: 'flex', alignItems: 'center', gap: '12px' }}>
+             <Search size={24} color="var(--primary-red)" /> LISTADO DE PREGUNTAS ({questions.length})
           </h3>
           {questions.map((q, qIdx) => (
-            <div key={q.id} className="card" style={{ padding: '30px', borderRadius: '28px', border: '2px solid var(--border-color)', background: 'var(--card-bg)' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', gap: '20px' }}>
-                     <div style={{ width: '45px', height: '45px', borderRadius: '15px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: 'var(--primary-red)', border: '2px solid var(--border-color)' }}>{qIdx + 1}</div>
+            <div key={q.id} className="card" style={{ padding: '35px', borderRadius: '35px', border: '2px solid var(--border-color)', background: 'var(--card-bg)' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
+                  <div style={{ display: 'flex', gap: '25px' }}>
+                     <div style={{ width: '55px', height: '55px', borderRadius: '18px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '950', color: 'var(--primary-red)', border: '2px solid var(--border-color)', fontSize: '20px' }}>{qIdx + 1}</div>
                      <div>
-                        <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
-                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(229, 57, 53, 0.1)', color: 'var(--primary-red)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{q.difficulty}</span>
-                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--gray-bg)', color: 'var(--secondary-text)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{q.type.replace('_', ' ')}</span>
-                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--primary-green)', color: '#FFFFFF', padding: '4px 10px', borderRadius: '8px' }}>{q.points} PTS</span>
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                           <span style={{ fontSize: '10px', fontWeight: '950', background: 'rgba(229, 57, 53, 0.12)', color: 'var(--primary-red)', padding: '5px 12px', borderRadius: '10px', textTransform: 'uppercase' }}>{q.difficulty}</span>
+                           <span style={{ fontSize: '10px', fontWeight: '950', background: 'var(--gray-bg)', color: 'var(--secondary-text)', padding: '5px 12px', borderRadius: '10px', textTransform: 'uppercase' }}>{q.type.replace('_', ' ')}</span>
+                           <span style={{ fontSize: '10px', fontWeight: '950', background: 'var(--primary-green)', color: 'white', padding: '5px 12px', borderRadius: '10px' }}>{q.points} PTS</span>
                         </div>
-                        <div style={{ fontWeight: '800', fontSize: '19px', lineHeight: '1.4' }}>{q.text}</div>
-                        <div style={{ color: 'var(--secondary-text)', fontSize: '14px', marginTop: '5px', fontStyle: 'italic' }}>{q.text_en}</div>
+                        <div style={{ fontWeight: '900', fontSize: '21px', lineHeight: '1.4', color: 'var(--text-color)' }}>{q.text}</div>
+                        <div style={{ color: 'var(--secondary-text)', fontSize: '15px', marginTop: '6px', fontStyle: 'italic', fontWeight: '600' }}>{q.text_en}</div>
                      </div>
                   </div>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                     <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => { setEditingQuestionId(q.id); setNewQuestion(q); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={18} /></button>
-                     <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px', color: 'var(--primary-red)' }} onClick={() => handleDeleteQuestion(q.id)}><Trash size={18} /></button>
+                     <button className="btn-secondary" style={{ padding: '12px', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'transparent' }} onClick={() => { setEditingQuestionId(q.id); setNewQuestion(q); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={20} /></button>
+                     <button className="btn-secondary" style={{ padding: '12px', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'transparent', color: 'var(--primary-red)' }} onClick={() => handleDeleteQuestion(q.id)}><Trash size={20} /></button>
                   </div>
                </div>
 
-               <div style={{ background: 'var(--gray-bg)', padding: '25px', borderRadius: '22px', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '15px', color: 'var(--secondary-text)', letterSpacing: '1px' }}>OPCIONES DE RESPUESTA</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+               <div style={{ background: 'var(--gray-bg)', padding: '30px', borderRadius: '28px', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '950', marginBottom: '20px', color: 'var(--secondary-text)', letterSpacing: '1px' }}>CONFIGURACIÓN DE RESPUESTAS</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                      {q.answers?.map((a: any) => (
-                       <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'var(--card-bg)', borderRadius: '14px', border: a.is_correct ? '2px solid var(--primary-green)' : '2px solid var(--border-color)', boxShadow: a.is_correct ? '0 5px 15px rgba(76, 175, 80, 0.1)' : 'none' }}>
+                       <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 25px', background: 'var(--card-bg)', borderRadius: '18px', border: a.is_correct ? '3px solid var(--primary-green)' : '2px solid var(--border-color)', boxShadow: a.is_correct ? '0 10px 20px rgba(76, 175, 80, 0.15)' : 'none' }}>
                           <div>
-                             <div style={{ fontWeight: '800', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                {a.text} {a.is_correct && <Check size={16} color="var(--primary-green)" />}
+                             <div style={{ fontWeight: '900', fontSize: '17px', display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-color)' }}>
+                                {a.text} {a.is_correct && <Check size={20} color="var(--primary-green)" />}
                              </div>
-                             <div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{a.text_en}</div>
+                             <div style={{ fontSize: '13px', color: 'var(--secondary-text)', fontWeight: '600', marginTop: '2px' }}>{a.text_en}</div>
                           </div>
-                          <div style={{ display: 'flex', gap: '5px' }}>
-                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--secondary-text)', padding: '5px' }} onClick={() => { setEditingAnswerId(a.id); setNewAnswer(a); }}><Pencil size={16} /></button>
-                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-red)', padding: '5px' }} onClick={() => handleDeleteAnswer(a.id)}><Trash size={16} /></button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--secondary-text)', padding: '8px' }} onClick={() => { setEditingAnswerId(a.id); setNewAnswer(a); }}><Pencil size={18} /></button>
+                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-red)', padding: '8px' }} onClick={() => handleDeleteAnswer(a.id)}><Trash size={18} /></button>
                           </div>
                        </div>
                      ))}
                      
-                     <form onSubmit={(e) => handleSaveAnswer(e, q.id)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '12px', marginTop: '10px', background: 'var(--gray-bg)', padding: '15px', borderRadius: '16px' }}>
-                        <input type="text" placeholder="Respuesta (ES)" value={newAnswer.text} onChange={e => setNewAnswer({...newAnswer, text: e.target.value})} style={{ padding: '10px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)' }} required />
-                        <input type="text" placeholder="Respuesta (EN)" value={newAnswer.text_en} onChange={e => setNewAnswer({...newAnswer, text_en: e.target.value})} style={{ padding: '10px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)' }} required />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '900', cursor: 'pointer' }}>
-                           <input type="checkbox" checked={newAnswer.is_correct} onChange={e => setNewAnswer({...newAnswer, is_correct: e.target.checked})} style={{ width: '18px', height: '18px' }} /> CORRECTA
-                        </label>
-                        <button type="submit" className="btn-primary" style={{ padding: '0 20px', height: '42px', borderRadius: '10px' }}><Plus size={20} /></button>
-                     </form>
+                     <div style={{ marginTop: '10px', background: 'rgba(0,0,0,0.03)', padding: '25px', borderRadius: '22px', border: '2px dashed var(--border-color)' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '950', marginBottom: '15px', color: 'var(--secondary-text)' }}>{editingAnswerId ? 'EDITAR RESPUESTA SELECCIONADA' : 'RÁPIDA ADICIÓN DE RESPUESTA'}</div>
+                        <form onSubmit={(e) => handleSaveAnswer(e, q.id)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '15px', alignItems: 'center' }}>
+                           <input type="text" placeholder="Texto (ES)" value={newAnswer.text} onChange={e => setNewAnswer({...newAnswer, text: e.target.value})} style={{ padding: '12px 18px', borderRadius: '12px', border: '2px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)', fontWeight: '700' }} required />
+                           <input type="text" placeholder="Text (EN)" value={newAnswer.text_en} onChange={e => setNewAnswer({...newAnswer, text_en: e.target.value})} style={{ padding: '12px 18px', borderRadius: '12px', border: '2px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)', fontWeight: '700' }} required />
+                           <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', fontWeight: '950', cursor: 'pointer', background: 'var(--card-bg)', padding: '10px 15px', borderRadius: '12px', border: '2px solid var(--border-color)' }}>
+                              <input type="checkbox" checked={newAnswer.is_correct} onChange={e => setNewAnswer({...newAnswer, is_correct: e.target.checked})} style={{ width: '20px', height: '20px' }} /> CORRECTA
+                           </label>
+                           <button type="submit" className="btn-primary" style={{ padding: '0 25px', height: '48px', borderRadius: '12px', boxShadow: '0 5px 15px rgba(229, 57, 53, 0.2)' }}>
+                              <Plus size={24} />
+                           </button>
+                        </form>
+                        {editingAnswerId && <button onClick={() => { setEditingAnswerId(null); setNewAnswer({ text: '', text_en: '', is_correct: false }); }} style={{ marginTop: '15px', background: 'none', border: 'none', color: 'var(--primary-red)', fontWeight: '900', fontSize: '11px', cursor: 'pointer' }}>CANCELAR EDICIÓN</button>}
+                     </div>
                   </div>
                </div>
             </div>
           ))}
-          {questions.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--secondary-text)', border: '2px dashed var(--border-color)' }}>No hay preguntas configuradas para esta lección todavía.</div>}
+          {questions.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '100px 40px', color: 'var(--secondary-text)', border: '4px dashed var(--border-color)', borderRadius: '40px' }}>
+             <Search size={64} style={{ opacity: 0.15, marginBottom: '25px' }} />
+             <p style={{ fontSize: '22px', fontWeight: '800' }}>El banco de preguntas está vacío</p>
+             <p style={{ fontSize: '16px', marginTop: '8px' }}>Configura la primera pregunta interactiva usando el panel superior.</p>
+          </div>}
        </div>
     </motion.div>
-  );
-
+  )
   const [enrolledUsers, setEnrolledUsers] = useState<any[]>([]);
   const [selectedUserAnswers, setSelectedUserAnswers] = useState<any[]>([]);
   const [courseTab, setCourseTab] = useState<'lessons' | 'users'>('lessons');
@@ -891,109 +911,153 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
        {courseTab === 'lessons' ? (
          <>
             {(editingLessonId !== null || newLesson.title !== '' || lessons.length === 0) && (
-                <div className="card" style={{ marginBottom: '40px', padding: '35px', borderRadius: '32px', border: '2px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-                  <h3 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}><Plus size={24} /> {editingLessonId ? 'EDITAR LECCIÓN' : 'NUEVA LECCIÓN'}</h3>
-                  <form onSubmit={handleSaveLesson} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="card" style={{ marginBottom: '40px', padding: '35px', borderRadius: '32px', border: '3px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+                  <h3 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '12px', fontWeight: '950', color: 'var(--primary-red)' }}>
+                     {editingLessonId ? <Pencil size={24} /> : <Plus size={24} />} 
+                     {editingLessonId ? 'EDITAR LECCIÓN' : 'AÑADIR NUEVA LECCIÓN'}
+                  </h3>
+                  <form onSubmit={handleSaveLesson} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
                       <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (ES)</label>
-                        <input type="text" value={newLesson.title} onChange={e => setNewLesson({...newLesson, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '0.5px' }}>TÍTULO DE LA LECCIÓN (ES)</label>
+                        <input type="text" placeholder="Ej: Introducción a la Bolsa" value={newLesson.title} onChange={e => setNewLesson({...newLesson, title: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '16px', fontWeight: '700' }} required />
                       </div>
                       <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (EN)</label>
-                        <input type="text" value={newLesson.title_en} onChange={e => setNewLesson({...newLesson, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '0.5px' }}>LESSON TITLE (EN)</label>
+                        <input type="text" placeholder="Ej: Introduction to Stock Market" value={newLesson.title_en} onChange={e => setNewLesson({...newLesson, title_en: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '16px', fontWeight: '700' }} required />
                       </div>
                       <div style={{ gridColumn: 'span 2' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>DESCRIPCIÓN BREVE (ES)</label>
-                        <textarea value={newLesson.description} onChange={e => setNewLesson({...newLesson, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} />
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '0.5px' }}>RESUMEN O DESCRIPCIÓN (ES)</label>
+                        <textarea value={newLesson.description} onChange={e => setNewLesson({...newLesson, description: e.target.value})} style={{ width: '100%', padding: '18px', borderRadius: '20px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '100px', fontSize: '15px', lineHeight: '1.6' }} />
                       </div>
                       <div style={{ display: 'flex', gap: '15px', gridColumn: 'span 2' }}>
-                        <button type="submit" className="btn-primary" style={{ flex: 2, padding: '15px', fontWeight: '900', letterSpacing: '1px' }}>GUARDAR LECCIÓN</button>
-                        <button type="button" onClick={() => { setEditingLessonId(null); setNewLesson({ title: '', title_en: '', description: '', description_en: '', content: '', content_en: '', sort_order: 0 }); }} className="btn-secondary" style={{ flex: 1, padding: '15px' }}>LIMPIAR</button>
+                        <button type="submit" className="btn-primary" style={{ flex: 2, padding: '18px', fontWeight: '950', fontSize: '15px', letterSpacing: '1px' }}>GUARDAR LECCIÓN</button>
+                        <button type="button" onClick={() => { setEditingLessonId(null); setNewLesson({ title: '', title_en: '', description: '', description_en: '', content: '', content_en: '', sort_order: 0 }); }} className="btn-secondary" style={{ flex: 1, padding: '18px', fontWeight: '800' }}>LIMPIAR</button>
                       </div>
                   </form>
                 </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <h3 style={{ fontSize: '22px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <LayoutDashboard size={20} /> LECCIONES CONFIGURADAS ({lessons.length})
-                </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                   <h3 style={{ fontSize: '22px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                     <LayoutDashboard size={22} color="var(--primary-red)" /> ESTRUCTURA DE LECCIONES
+                   </h3>
+                   <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--secondary-text)', background: 'var(--gray-bg)', padding: '5px 15px', borderRadius: '10px' }}>{lessons.length} TOTAL</span>
+                </div>
+                
                 {lessons.map((lesson, idx) => (
-                  <div key={lesson.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 30px', background: 'var(--card-bg)', borderRadius: '24px', border: '2px solid var(--border-color)', transition: 'all 0.2s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gray-bg)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '900', color: 'var(--primary-red)' }}>{idx + 1}</div>
+                  <div key={lesson.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '25px 35px', background: 'var(--card-bg)', borderRadius: '28px', border: '2px solid var(--border-color)', transition: 'transform 0.2s, box-shadow 0.2s', position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'var(--gray-bg)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '950', color: 'var(--primary-red)' }}>{idx + 1}</div>
                         <div>
-                          <div style={{ fontWeight: '900', fontSize: '18px' }}>{lesson.title}</div>
-                          <div style={{ fontSize: '13px', color: 'var(--secondary-text)', marginTop: '2px' }}>{lesson.description?.substring(0, 100)}{lesson.description?.length > 100 ? '...' : ''}</div>
+                          <div style={{ fontWeight: '900', fontSize: '20px', color: 'var(--text-color)' }}>{lesson.title}</div>
+                          <div style={{ fontSize: '14px', color: 'var(--secondary-text)', marginTop: '4px', maxWidth: '500px' }}>{lesson.description?.substring(0, 120)}{lesson.description?.length > 120 ? '...' : ''}</div>
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
-                        <button className="btn-secondary" style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px' }} onClick={() => fetchLessonDetails(lesson.id)}><Eye size={18} /> PREGUNTAS</button>
-                        <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => { setEditingLessonId(lesson.id); setNewLesson(lesson); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={18} /></button>
-                        <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px', color: 'var(--primary-red)' }} onClick={() => handleDeleteLesson(lesson.id)}><Trash size={18} /></button>
+                        <button className="btn-secondary" style={{ padding: '12px 22px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '900', fontSize: '13px', background: 'var(--gray-bg)', border: 'none' }} onClick={() => fetchLessonDetails(lesson.id)}>
+                           <Eye size={18} /> PREGUNTAS
+                        </button>
+                        <button className="btn-secondary" style={{ padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'transparent' }} onClick={() => { setEditingLessonId(lesson.id); setNewLesson(lesson); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                           <Pencil size={18} />
+                        </button>
+                        <button className="btn-secondary" style={{ padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'transparent', color: 'var(--primary-red)' }} onClick={() => handleDeleteLesson(lesson.id)}>
+                           <Trash size={18} />
+                        </button>
                     </div>
                   </div>
                 ))}
-                {lessons.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--secondary-text)', border: '2px dashed var(--border-color)' }}>Aún no has añadido lecciones a este curso.</div>}
+                {lessons.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '80px 40px', color: 'var(--secondary-text)', border: '3px dashed var(--border-color)', borderRadius: '32px' }}>
+                   <Book size={48} style={{ opacity: 0.2, marginBottom: '20px' }} />
+                   <p style={{ fontSize: '18px', fontWeight: '700' }}>No hay lecciones configuradas</p>
+                   <p style={{ fontSize: '14px', marginTop: '5px' }}>Usa el formulario de arriba para añadir la primera lección del curso.</p>
+                </div>}
             </div>
          </>
        ) : (
-         <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-            <div className="card" style={{ padding: 0, overflow: 'hidden', borderRadius: '32px', border: '2px solid var(--border-color)' }}>
-               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead style={{ background: 'var(--gray-bg)' }}>
-                     <tr>
-                        <th style={{ padding: '20px 25px', fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)' }}>USUARIO</th>
-                        <th style={{ padding: '20px 25px', fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)' }}>PROGRESO</th>
-                        <th style={{ padding: '20px 25px', fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)', textAlign: 'right' }}>ACCIONES</th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     {enrolledUsers.map(user => (
-                       <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                          <td style={{ padding: '20px 25px' }}>
-                             <div style={{ fontWeight: '800' }}>{user.name}</div>
-                             <div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{user.email}</div>
-                          </td>
-                          <td style={{ padding: '20px 25px' }}>
-                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                <div style={{ flex: 1, height: '8px', background: 'var(--gray-bg)', borderRadius: '10px', overflow: 'hidden' }}>
-                                   <div style={{ height: '100%', background: 'var(--primary-green)', width: `${(user.completed_lessons / (user.total_lessons || 1)) * 100}%` }} />
-                                </div>
-                                <span style={{ fontWeight: '900', fontSize: '13px' }}>{user.completed_lessons} / {user.total_lessons}</span>
-                             </div>
-                          </td>
-                          <td style={{ padding: '20px 25px', textAlign: 'right' }}>
-                             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                <button className="btn-secondary" style={{ padding: '8px 15px', fontSize: '12px', fontWeight: '800' }} onClick={() => fetchUserAnswers(user.id, selectedCourse.id)}>VER RESPUESTAS</button>
-                                <button className="btn-secondary" style={{ padding: '8px 15px', fontSize: '12px', fontWeight: '800', color: 'var(--primary-red)' }} onClick={() => handleExpelUser(user.id)}>EXPULSAR</button>
-                             </div>
-                          </td>
-                       </tr>
-                     ))}
-                  </tbody>
-               </table>
+         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '25px' }}>
+               {enrolledUsers.map(user => (
+                 <div key={user.id} className="card" style={{ padding: '30px', borderRadius: '32px', border: '2px solid var(--border-color)', background: 'var(--card-bg)', transition: 'all 0.3s' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
+                       <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                          <div style={{ width: '50px', height: '50px', borderRadius: '18px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '950', color: 'var(--primary-red)', border: '1px solid var(--border-color)' }}>
+                             {user.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                             <div style={{ fontWeight: '900', fontSize: '18px' }}>{user.name}</div>
+                             <div style={{ fontSize: '13px', color: 'var(--secondary-text)' }}>{user.email}</div>
+                          </div>
+                       </div>
+                       <button className="btn-secondary" style={{ padding: '8px 12px', borderRadius: '10px', color: 'var(--primary-red)', border: 'none', background: 'rgba(229, 57, 53, 0.05)' }} onClick={() => handleExpelUser(user.id)} title="Expulsar del curso">
+                          <UserMinus size={18} />
+                       </button>
+                    </div>
+
+                    <div style={{ marginBottom: '25px' }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '950', color: 'var(--secondary-text)', letterSpacing: '1px' }}>PROGRESO DEL CURSO</span>
+                          <span style={{ fontSize: '13px', fontWeight: '900', color: 'var(--primary-red)' }}>{Math.round((user.completed_lessons / (user.total_lessons || 1)) * 100)}%</span>
+                       </div>
+                       <div style={{ height: '12px', background: 'var(--gray-bg)', borderRadius: '20px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+                          <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: `${(user.completed_lessons / (user.total_lessons || 1)) * 100}%` }}
+                             style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary-red), #FF5252)', borderRadius: '20px' }} 
+                          />
+                       </div>
+                       <div style={{ fontSize: '12px', color: 'var(--secondary-text)', marginTop: '8px', fontWeight: '800' }}>
+                          {user.completed_lessons} de {user.total_lessons} lecciones completadas
+                       </div>
+                    </div>
+
+                    <button 
+                       className="btn-secondary" 
+                       style={{ width: '100%', padding: '15px', borderRadius: '18px', fontWeight: '950', fontSize: '13px', letterSpacing: '0.5px', background: 'var(--gray-bg)', border: '2px solid var(--border-color)' }}
+                       onClick={() => { fetchUserAnswers(user.id, selectedCourse.id); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }}
+                    >
+                       REVISAR RESPUESTAS DETALLADAS
+                    </button>
+                 </div>
+               ))}
+               
+               {enrolledUsers.length === 0 && <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px', color: 'var(--secondary-text)', border: '3px dashed var(--border-color)', borderRadius: '32px' }}>
+                  <Users size={48} style={{ opacity: 0.2, marginBottom: '20px' }} />
+                  <p style={{ fontSize: '18px', fontWeight: '700' }}>No hay alumnos inscritos en este curso aún.</p>
+               </div>}
             </div>
 
             {selectedUserAnswers.length > 0 && (
-               <div className="card" style={{ padding: '30px', borderRadius: '32px', border: '2px solid var(--primary-green)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                     <h3 style={{ margin: 0 }}>Respuestas de Usuario</h3>
-                     <button onClick={() => setSelectedUserAnswers([])} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--secondary-text)' }}><X size={20} /></button>
+               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card" style={{ padding: '40px', borderRadius: '35px', border: '3px solid var(--primary-green)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' }}>
+                     <div>
+                        <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '950' }}>HISTORIAL DE RESPUESTAS</h3>
+                        <p style={{ margin: '5px 0 0', color: 'var(--secondary-text)', fontSize: '14px' }}>Analizando desempeño y permitiendo reinicios específicos</p>
+                     </div>
+                     <button onClick={() => setSelectedUserAnswers([])} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--gray-bg)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                      {selectedUserAnswers.map(ans => (
-                       <div key={ans.ua_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', background: 'var(--gray-bg)', borderRadius: '15px' }}>
-                          <div>
-                             <div style={{ fontSize: '11px', fontWeight: '900', color: 'var(--secondary-text)' }}>LECCIÓN: {ans.lesson_title}</div>
-                             <div style={{ fontWeight: '800' }}>{ans.question_text}</div>
-                             <div style={{ fontSize: '13px', color: ans.is_correct ? 'var(--primary-green)' : 'var(--primary-red)', fontWeight: 'bold' }}>Respuesta: {ans.answer_text} {ans.is_correct ? '✅' : '❌'}</div>
+                       <div key={ans.ua_id} style={{ padding: '25px', background: 'var(--gray-bg)', borderRadius: '24px', border: '1px solid var(--border-color)', position: 'relative' }}>
+                          <div style={{ position: 'absolute', right: '20px', top: '20px' }}>
+                             {ans.is_correct ? <Check size={24} color="var(--primary-green)" /> : <X size={24} color="var(--primary-red)" />}
                           </div>
-                          <button className="btn-secondary" style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--primary-red)' }} onClick={() => handleResetQuestion(ans.user_id, ans.question_id)}>REINICIAR PREGUNTA</button>
+                          <div style={{ fontSize: '10px', fontWeight: '950', color: 'var(--secondary-text)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>LECCIÓN: {ans.lesson_title}</div>
+                          <div style={{ fontWeight: '900', fontSize: '17px', marginBottom: '12px', paddingRight: '30px' }}>{ans.question_text}</div>
+                          <div style={{ fontSize: '14px', background: 'var(--card-bg)', padding: '12px 15px', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '20px' }}>
+                             <span style={{ color: 'var(--secondary-text)', fontWeight: '700' }}>Respuesta:</span> <span style={{ fontWeight: '800', color: ans.is_correct ? 'var(--primary-green)' : 'var(--primary-red)' }}>{ans.answer_text}</span>
+                          </div>
+                          <button 
+                             className="btn-secondary" 
+                             style={{ width: '100%', padding: '12px', fontSize: '12px', fontWeight: '900', color: 'var(--primary-red)', background: 'transparent', border: '2px solid var(--primary-red)' }} 
+                             onClick={() => handleResetQuestion(ans.user_id, ans.question_id)}
+                          >
+                             BORRAR REGISTRO Y REINICIAR PREGUNTA
+                          </button>
                        </div>
                      ))}
                   </div>
-               </div>
+               </motion.div>
             )}
          </div>
        )}
@@ -1206,94 +1270,93 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px', alignItems: 'center' }}>
           <div>
-             <h2 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>Gestión de Usuarios</h2>
-             <p style={{ color: 'var(--secondary-text)', margin: '5px 0 0', fontSize: '15px' }}>Monitorea estadísticas, ajusta balances y gestiona roles de acceso</p>
+             <h2 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>Comunidad de Inversores</h2>
+             <p style={{ color: 'var(--secondary-text)', margin: '5px 0 0', fontSize: '15px' }}>Monitorea el desempeño y gestiona los privilegios de la plataforma</p>
           </div>
-          <div className="card" style={{ padding: '10px 25px', borderRadius: '15px', background: 'var(--gray-bg)', fontWeight: '800' }}>
-             Total: <span style={{ color: 'var(--primary-red)' }}>{users.length}</span> activos
+          <div className="card" style={{ padding: '12px 30px', borderRadius: '18px', background: 'var(--gray-bg)', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px' }}>
+             <Users size={20} color="var(--primary-red)" />
+             <span>{users.length} MIEMBROS</span>
           </div>
        </div>
 
-       <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'var(--card-bg)', border: '2px solid var(--border-color)', borderRadius: '32px', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-               <thead style={{ background: 'var(--gray-bg)', borderBottom: '2px solid var(--border-color)' }}>
-                  <tr>
-                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px' }}>PERFIL Y CONTACTO</th>
-                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px' }}>BALANCES ACTUALES</th>
-                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px' }}>ACCESO Y ROL</th>
-                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'right' }}>ACCIONES</th>
-                  </tr>
-               </thead>
-               <tbody>
-                  {users.map(user => (
-                    <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
-                       <td style={{ padding: '20px 25px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                             <div style={{ width: '45px', height: '45px', borderRadius: '15px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: 'var(--secondary-text)', overflow: 'hidden' }}>
-                                {user.avatar_url ? <img src={`${API_BASE_URL}${user.avatar_url}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <UserIcon size={20} />}
-                             </div>
-                             <div>
-                                <div style={{ fontWeight: '800', fontSize: '16px' }}>{user.name}</div>
-                                <div style={{ fontSize: '13px', color: 'var(--secondary-text)' }}>{user.email}</div>
-                             </div>
-                          </div>
-                       </td>
-                       <td style={{ padding: '20px 25px' }}>
-                          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                             <div title="Toros (TRS)" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 193, 7, 0.1)', padding: '6px 12px', borderRadius: '10px', color: '#FF9800' }}>
-                                <BullCoin size={14} /> <span style={{ fontWeight: '900', fontSize: '14px' }}>{user.points}</span>
-                             </div>
-                             <div title="Vidas" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(229, 57, 53, 0.1)', padding: '6px 12px', borderRadius: '10px', color: 'var(--primary-red)' }}>
-                                <Zap size={14} /> <span style={{ fontWeight: '900', fontSize: '14px' }}>{user.lives}</span>
-                             </div>
-                             <div title="Nivel" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(76, 175, 80, 0.1)', padding: '6px 12px', borderRadius: '10px', color: 'var(--primary-green)' }}>
-                                <Trophy size={14} /> <span style={{ fontWeight: '900', fontSize: '14px' }}>{user.level || 1}</span>
-                             </div>
-                          </div>
-                       </td>
-                       <td style={{ padding: '20px 25px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                             <select 
-                               value={user.role} 
-                               onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
-                               style={{ padding: '8px 12px', borderRadius: '10px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800', fontSize: '12px', textTransform: 'uppercase' }}
-                             >
-                                <option value="user">USER</option>
-                                <option value="admin">ADMIN</option>
-                             </select>
-                             {user.subscription_status === 'premium' && (
-                                <span style={{ background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'var(--text-color)', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '950' }}>PREMIUM</span>
-                             )}
-                          </div>
-                       </td>
-                       <td style={{ padding: '20px 25px', textAlign: 'right' }}>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ padding: '10px 18px', fontSize: '12px', fontWeight: '900', borderRadius: '12px', background: 'var(--card-bg)', border: '2px solid var(--border-color)' }}
-                            onClick={() => {
-                               const pts = prompt('Nuevos Toros (TRS):', user.points);
-                               const lives = prompt('Nuevas Vidas:', user.lives);
-                               if (pts !== null || lives !== null) {
-                                  handleUpdateUserStats(user.id, { 
-                                     points: pts !== null ? parseInt(pts) : user.points,
-                                     lives: lives !== null ? parseInt(lives) : user.lives
-                                  });
-                               }
-                            }}
-                          >
-                             EDITAR BALANCE
-                          </button>
-                       </td>
-                    </tr>
-                  ))}
-               </tbody>
-            </table>
-          </div>
+       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '25px' }}>
+          {users.map(user => (
+            <motion.div 
+              key={user.id} 
+              whileHover={{ y: -5 }}
+              className="card" 
+              style={{ padding: '30px', borderRadius: '32px', border: '2px solid var(--border-color)', background: 'var(--card-bg)', transition: 'all 0.3s' }}
+            >
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
+                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                     <div style={{ width: '55px', height: '55px', borderRadius: '20px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '950', color: 'var(--secondary-text)', overflow: 'hidden', border: '2px solid var(--border-color)' }}>
+                        {user.avatar_url ? <img src={`${API_BASE_URL}${user.avatar_url}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <UserIcon size={24} />}
+                     </div>
+                     <div>
+                        <div style={{ fontWeight: '950', fontSize: '19px' }}>{user.name}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--secondary-text)', fontWeight: '700' }}>{user.email}</div>
+                     </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                     <select 
+                       value={user.role} 
+                       onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
+                       style={{ padding: '6px 12px', borderRadius: '10px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '950', fontSize: '11px', textTransform: 'uppercase' }}
+                     >
+                        <option value="user">USER</option>
+                        <option value="admin">ADMIN</option>
+                     </select>
+                     {user.subscription_status === 'premium' && (
+                        <span style={{ background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'black', padding: '4px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '950', boxShadow: '0 5px 10px rgba(255, 165, 0, 0.2)' }}>PREMIUM</span>
+                     )}
+                  </div>
+               </div>
+
+               <div style={{ background: 'var(--gray-bg)', padding: '20px', borderRadius: '22px', marginBottom: '25px', display: 'flex', justifyContent: 'space-between' }}>
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                     <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary-text)', marginBottom: '5px' }}>TOROS</div>
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', color: '#FF9800', fontWeight: '950' }}>
+                        <BullCoin size={16} /> {user.points}
+                     </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'var(--border-color)', margin: '0 15px' }} />
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                     <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary-text)', marginBottom: '5px' }}>VIDAS</div>
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', color: 'var(--primary-red)', fontWeight: '950' }}>
+                        <Zap size={16} /> {user.lives}
+                     </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'var(--border-color)', margin: '0 15px' }} />
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                     <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary-text)', marginBottom: '5px' }}>NIVEL</div>
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', color: 'var(--primary-green)', fontWeight: '950' }}>
+                        <Trophy size={16} /> {user.level || 1}
+                     </div>
+                  </div>
+               </div>
+
+               <button 
+                  className="btn-secondary" 
+                  style={{ width: '100%', padding: '15px', borderRadius: '18px', fontWeight: '950', fontSize: '13px', background: 'transparent', border: '2px solid var(--border-color)' }}
+                  onClick={() => {
+                     const pts = prompt('Ajustar Toros (TRS):', user.points);
+                     const lives = prompt('Ajustar Vidas:', user.lives);
+                     if (pts !== null || lives !== null) {
+                        handleUpdateUserStats(user.id, { 
+                           points: pts !== null ? parseInt(pts) : user.points,
+                           lives: lives !== null ? parseInt(lives) : user.lives
+                        });
+                     }
+                  }}
+               >
+                  GESTIONAR BALANCE MANUAL
+               </button>
+            </motion.div>
+          ))}
        </div>
     </motion.div>
   );
-
+               <thead style={{ background: 'var(--gray-bg)', borderBottom: '2px solid var(--border-color)' }}>
   const handleSaveCategory = async (cat: any) => {
     const url = cat.id ? `${API_BASE_URL}/api/settings/categories/${cat.id}` : `${API_BASE_URL}/api/settings/categories`;
     const method = cat.id ? 'PUT' : 'POST';
