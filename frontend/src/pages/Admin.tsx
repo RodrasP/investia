@@ -261,7 +261,14 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
 
   // Form states
   const [showForm, setShowForm] = useState(false);
-  const [newCourse, setNewCourse] = useState({ title: '', title_en: '', description: '', description_en: '', points: 50, xp_reward: 100, category_id: 1, difficulty: 'beginner', visibility: 'public', order_index: 0, imageFile: null as File | null });
+  const [newCourse, setNewCourse] = useState({ 
+    title: '', title_en: '', 
+    description: '', description_en: '', 
+    points_reward: 100, points_price: 0, 
+    category_id: 1, category: 'General', category_en: 'General',
+    difficulty: 'beginner', visibility: 'public', access_level: 'free',
+    icon: 'Book', imageFile: null as File | null 
+  });
   const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
@@ -421,7 +428,14 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
       toast.success(editingCourseId ? 'Curso actualizado' : 'Curso creado');
       setShowForm(false);
       setEditingCourseId(null);
-      setNewCourse({ title: '', title_en: '', description: '', description_en: '', points: 50, xp_reward: 100, category_id: 1, difficulty: 'beginner', visibility: 'public', order_index: 0, imageFile: null });
+      setNewCourse({ 
+        title: '', title_en: '', 
+        description: '', description_en: '', 
+        points_reward: 100, points_price: 0, 
+        category_id: 1, category: 'General', category_en: 'General',
+        difficulty: 'beginner', visibility: 'public', access_level: 'free',
+        icon: 'Book', imageFile: null 
+      });
       fetchCourses();
     } else {
       toast.error('Error al guardar el curso');
@@ -699,120 +713,177 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
 
   const renderLessonDetails = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-          <button onClick={() => setView('courseDetails')} className="btn-secondary" style={{ padding: '10px' }}><ChevronLeft size={20} /></button>
-          <h2>Preguntas: {selectedLesson?.title}</h2>
+       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+             <button onClick={() => setView('courseDetails')} className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }}><ChevronLeft size={20} /></button>
+             <div>
+                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '900' }}>Gestión de Preguntas</h2>
+                <p style={{ margin: 0, color: 'var(--secondary-text)', fontSize: '14px' }}>Lección: <span style={{ color: 'var(--primary-red)', fontWeight: '700' }}>{selectedLesson?.title}</span></p>
+             </div>
+          </div>
        </div>
 
-       <div className="card" style={{ marginBottom: '30px', padding: '30px', borderRadius: '24px' }}>
-          <h3>{editingQuestionId ? 'Editar Pregunta' : 'Nueva Pregunta'}</h3>
-          <form onSubmit={handleSaveQuestion} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-             <input type="text" placeholder="Texto de la pregunta (ES)" value={newQuestion.text} onChange={e => setNewQuestion({...newQuestion, text: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
-             <input type="text" placeholder="Texto de la pregunta (EN)" value={newQuestion.text_en} onChange={e => setNewQuestion({...newQuestion, text_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
-             <div style={{ display: 'flex', gap: '15px' }}>
-                <select value={newQuestion.difficulty} onChange={e => setNewQuestion({...newQuestion, difficulty: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}>
-                   <option value="easy">Fácil (L1)</option>
-                   <option value="medium">Medio (L2)</option>
-                   <option value="hard">Difícil (L3)</option>
-                </select>
-                <input type="number" placeholder="Puntos" value={newQuestion.points} onChange={e => setNewQuestion({...newQuestion, points: parseInt(e.target.value)})} style={{ width: '100px', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
+       <div className="card" style={{ marginBottom: '40px', padding: '35px', borderRadius: '32px', border: '2px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}><Plus size={24} /> {editingQuestionId ? 'EDITAR PREGUNTA' : 'NUEVA PREGUNTA'}</h3>
+          
+          <form onSubmit={handleSaveQuestion} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ gridColumn: 'span 2' }}>
+                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TEXTO DE LA PREGUNTA (ES)</label>
+                   <textarea placeholder="Ej: ¿Qué es el interés compuesto?" value={newQuestion.text} onChange={e => setNewQuestion({...newQuestion, text: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px', fontSize: '16px' }} required />
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TEXTO DE LA PREGUNTA (EN)</label>
+                   <textarea placeholder="Ej: What is compound interest?" value={newQuestion.text_en} onChange={e => setNewQuestion({...newQuestion, text_en: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px', fontSize: '16px' }} required />
+                </div>
+                
+                <div>
+                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TIPO DE PREGUNTA</label>
+                   <select value={newQuestion.type} onChange={e => setNewQuestion({...newQuestion, type: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '700' }}>
+                      <option value="multiple_choice">Opción Múltiple</option>
+                      <option value="true_false">Verdadero / Falso</option>
+                      <option value="text_input">Respuesta de Texto</option>
+                   </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '15px' }}>
+                   <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>DIFICULTAD</label>
+                      <select value={newQuestion.difficulty} onChange={e => setNewQuestion({...newQuestion, difficulty: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '700' }}>
+                         <option value="easy">Fácil (L1)</option>
+                         <option value="medium">Medio (L2)</option>
+                         <option value="hard">Difícil (L3)</option>
+                      </select>
+                   </div>
+                   <div style={{ width: '120px' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>PUNTOS</label>
+                      <input type="number" value={newQuestion.points} onChange={e => setNewQuestion({...newQuestion, points: parseInt(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '900', textAlign: 'center' }} />
+                   </div>
+                </div>
              </div>
-             <div style={{ display: 'flex', gap: '15px' }}>
-                <button type="submit" className="btn-primary" style={{ flex: 1 }}>GUARDAR PREGUNTA</button>
-                <button type="button" onClick={() => { setEditingQuestionId(null); setNewQuestion({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' }); }} className="btn-secondary" style={{ flex: 1 }}>LIMPIAR</button>
+
+             <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+                <button type="submit" className="btn-primary" style={{ flex: 2, padding: '15px', fontSize: '14px', letterSpacing: '1px' }}>{editingQuestionId ? 'ACTUALIZAR PREGUNTA' : 'GUARDAR PREGUNTA'}</button>
+                <button type="button" onClick={() => { setEditingQuestionId(null); setNewQuestion({ text: '', text_en: '', points: 10, difficulty: 'easy', type: 'multiple_choice' }); }} className="btn-secondary" style={{ flex: 1, padding: '15px' }}>LIMPIAR FORMULARIO</button>
              </div>
           </form>
        </div>
 
-       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {questions.map(q => (
-            <div key={q.id} className="card" style={{ padding: '25px', borderRadius: '24px' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                  <div>
-                     <div style={{ fontSize: '12px', fontWeight: '900', color: 'var(--primary-red)', marginBottom: '5px' }}>{q.difficulty.toUpperCase()} • {q.points} PUNTOS</div>
-                     <div style={{ fontWeight: '800', fontSize: '18px' }}>{q.text}</div>
+       <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+          <h3 style={{ fontSize: '22px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px' }}>
+             <Search size={20} /> PREGUNTAS ACTUALES ({questions.length})
+          </h3>
+          {questions.map((q, qIdx) => (
+            <div key={q.id} className="card" style={{ padding: '30px', borderRadius: '28px', border: '2px solid var(--border-color)', background: 'var(--card-bg)' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', gap: '20px' }}>
+                     <div style={{ width: '45px', height: '45px', borderRadius: '15px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: 'var(--primary-red)', border: '2px solid var(--border-color)' }}>{qIdx + 1}</div>
+                     <div>
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(229, 57, 53, 0.1)', color: 'var(--primary-red)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{q.difficulty}</span>
+                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--gray-bg)', color: 'var(--secondary-text)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{q.type.replace('_', ' ')}</span>
+                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--primary-green)', color: 'white', padding: '4px 10px', borderRadius: '8px' }}>{q.points} PTS</span>
+                        </div>
+                        <div style={{ fontWeight: '800', fontSize: '19px', lineHeight: '1.4' }}>{q.text}</div>
+                        <div style={{ color: 'var(--secondary-text)', fontSize: '14px', marginTop: '5px', fontStyle: 'italic' }}>{q.text_en}</div>
+                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                     <button className="btn-secondary" style={{ padding: '8px' }} onClick={() => { setEditingQuestionId(q.id); setNewQuestion(q); }}><Pencil size={16} /></button>
-                     <button className="btn-secondary" style={{ padding: '8px', color: 'var(--primary-red)' }} onClick={() => handleDeleteQuestion(q.id)}><Trash size={16} /></button>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                     <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => { setEditingQuestionId(q.id); setNewQuestion(q); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={18} /></button>
+                     <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px', color: 'var(--primary-red)' }} onClick={() => handleDeleteQuestion(q.id)}><Trash size={18} /></button>
                   </div>
                </div>
 
-               <div style={{ background: 'var(--gray-bg)', padding: '20px', borderRadius: '18px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '900', marginBottom: '15px' }}>RESPUESTAS</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+               <div style={{ background: 'var(--gray-bg)', padding: '25px', borderRadius: '22px', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '900', marginBottom: '15px', color: 'var(--secondary-text)', letterSpacing: '1px' }}>OPCIONES DE RESPUESTA</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                      {q.answers?.map((a: any) => (
-                       <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 15px', background: 'var(--card-bg)', borderRadius: '12px', border: a.is_correct ? '2px solid var(--primary-green)' : '1px solid var(--border-color)' }}>
-                          <div style={{ fontWeight: '700' }}>{a.text} {a.is_correct && '✅'}</div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--secondary-text)' }} onClick={() => { setEditingAnswerId(a.id); setNewAnswer(a); }}><Pencil size={14} /></button>
-                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-red)' }} onClick={() => handleDeleteAnswer(a.id)}><Trash size={14} /></button>
+                       <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'var(--card-bg)', borderRadius: '14px', border: a.is_correct ? '2px solid var(--primary-green)' : '2px solid var(--border-color)', boxShadow: a.is_correct ? '0 5px 15px rgba(76, 175, 80, 0.1)' : 'none' }}>
+                          <div>
+                             <div style={{ fontWeight: '800', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                {a.text} {a.is_correct && <Check size={16} color="var(--primary-green)" />}
+                             </div>
+                             <div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{a.text_en}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '5px' }}>
+                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--secondary-text)', padding: '5px' }} onClick={() => { setEditingAnswerId(a.id); setNewAnswer(a); }}><Pencil size={16} /></button>
+                             <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-red)', padding: '5px' }} onClick={() => handleDeleteAnswer(a.id)}><Trash size={16} /></button>
                           </div>
                        </div>
                      ))}
                      
-                     <form onSubmit={(e) => handleSaveAnswer(e, q.id)} style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                        <input type="text" placeholder="Nueva respuesta..." value={newAnswer.text} onChange={e => setNewAnswer({...newAnswer, text: e.target.value})} style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)' }} required />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 'bold' }}>
-                           <input type="checkbox" checked={newAnswer.is_correct} onChange={e => setNewAnswer({...newAnswer, is_correct: e.target.checked})} /> CORRECTA
+                     <form onSubmit={(e) => handleSaveAnswer(e, q.id)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '12px', marginTop: '10px', background: 'rgba(0,0,0,0.03)', padding: '15px', borderRadius: '16px' }}>
+                        <input type="text" placeholder="Respuesta (ES)" value={newAnswer.text} onChange={e => setNewAnswer({...newAnswer, text: e.target.value})} style={{ padding: '10px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)' }} required />
+                        <input type="text" placeholder="Respuesta (EN)" value={newAnswer.text_en} onChange={e => setNewAnswer({...newAnswer, text_en: e.target.value})} style={{ padding: '10px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)' }} required />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '900', cursor: 'pointer' }}>
+                           <input type="checkbox" checked={newAnswer.is_correct} onChange={e => setNewAnswer({...newAnswer, is_correct: e.target.checked})} style={{ width: '18px', height: '18px' }} /> CORRECTA
                         </label>
-                        <button type="submit" className="btn-primary" style={{ padding: '0 15px' }}>+</button>
+                        <button type="submit" className="btn-primary" style={{ padding: '0 20px', height: '42px', borderRadius: '10px' }}><Plus size={20} /></button>
                      </form>
                   </div>
                </div>
             </div>
           ))}
+          {questions.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--secondary-text)', border: '2px dashed var(--border-color)' }}>No hay preguntas configuradas para esta lección todavía.</div>}
        </div>
     </motion.div>
   );
 
   const renderCourseDetails = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-          <button onClick={() => setView('courses')} className="btn-secondary" style={{ padding: '10px' }}><ChevronLeft size={20} /></button>
-          <h2>{selectedCourse?.title} - Lecciones</h2>
-       </div>
-       {(editingLessonId !== null || newLesson.title !== '' || lessons.length === 0) && (
-          <div className="card" style={{ marginBottom: '30px', padding: '30px', borderRadius: '24px' }}>
-             <h3>{editingLessonId ? 'Editar Lección' : 'Nueva Lección'}</h3>
-             <form onSubmit={handleSaveLesson} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-                <div>
-                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (ES)</label>
-                   <input type="text" value={newLesson.title} onChange={e => setNewLesson({...newLesson, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
-                </div>
-                <div>
-                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (EN)</label>
-                   <input type="text" value={newLesson.title_en} onChange={e => setNewLesson({...newLesson, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
-                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>DESCRIPCIÓN (ES)</label>
-                   <textarea value={newLesson.description} onChange={e => setNewLesson({...newLesson, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
-                </div>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                   <button type="submit" className="btn-primary" style={{ flex: 1 }}>GUARDAR</button>
-                   <button type="button" onClick={() => { setEditingLessonId(null); setNewLesson({ title: '', title_en: '', description: '', description_en: '', content: '', content_en: '', sort_order: 0 }); }} className="btn-secondary" style={{ flex: 1 }}>LIMPIAR</button>
-                </div>
-             </form>
+       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+             <button onClick={() => setView('courses')} className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }}><ChevronLeft size={20} /></button>
+             <div>
+                <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '900' }}>Gestión de Lecciones</h2>
+                <p style={{ margin: 0, color: 'var(--secondary-text)', fontSize: '14px' }}>Curso: <span style={{ color: 'var(--primary-red)', fontWeight: '700' }}>{selectedCourse?.title}</span></p>
+             </div>
           </div>
-       )}
-       <div className="card" style={{ padding: '30px', borderRadius: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}><h3>Lecciones ({lessons.length})</h3></div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-             {lessons.map((lesson, idx) => (
-               <div key={lesson.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', background: 'var(--gray-bg)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                     <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'var(--card-bg)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>{idx + 1}</div>
-                     <div><div style={{ fontWeight: '800' }}>{lesson.title}</div><div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{lesson.description?.substring(0, 60)}...</div></div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                     <button className="btn-secondary" style={{ padding: '8px' }} onClick={() => fetchLessonDetails(lesson.id)}><Eye size={16} /> PREGUNTAS</button>
-                     <button className="btn-secondary" style={{ padding: '8px' }} onClick={() => { setEditingLessonId(lesson.id); setNewLesson(lesson); }}><Pencil size={16} /></button>
-                     <button className="btn-secondary" style={{ padding: '8px', color: 'var(--primary-red)' }} onClick={() => handleDeleteLesson(lesson.id)}><Trash size={16} /></button>
+       </div>
+
+       <div className="card" style={{ marginBottom: '40px', padding: '35px', borderRadius: '32px', border: '2px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}><Plus size={24} /> {editingLessonId ? 'EDITAR LECCIÓN' : 'NUEVA LECCIÓN'}</h3>
+          <form onSubmit={handleSaveLesson} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+             <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (ES)</label>
+                <input type="text" value={newLesson.title} onChange={e => setNewLesson({...newLesson, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
+             </div>
+             <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>TÍTULO (EN)</label>
+                <input type="text" value={newLesson.title_en} onChange={e => setNewLesson({...newLesson, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '14px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '15px', fontWeight: '600' }} required />
+             </div>
+             <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>DESCRIPCIÓN BREVE (ES)</label>
+                <textarea value={newLesson.description} onChange={e => setNewLesson({...newLesson, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} />
+             </div>
+             <div style={{ display: 'flex', gap: '15px', gridColumn: 'span 2' }}>
+                <button type="submit" className="btn-primary" style={{ flex: 2, padding: '15px', fontWeight: '900', letterSpacing: '1px' }}>GUARDAR LECCIÓN</button>
+                <button type="button" onClick={() => { setEditingLessonId(null); setNewLesson({ title: '', title_en: '', description: '', description_en: '', content: '', content_en: '', sort_order: 0 }); }} className="btn-secondary" style={{ flex: 1, padding: '15px' }}>LIMPIAR</button>
+             </div>
+          </form>
+       </div>
+
+       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <h3 style={{ fontSize: '22px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+             <LayoutDashboard size={20} /> LECCIONES CONFIGURADAS ({lessons.length})
+          </h3>
+          {lessons.map((lesson, idx) => (
+            <div key={lesson.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 30px', background: 'var(--card-bg)', borderRadius: '24px', border: '2px solid var(--border-color)', transition: 'all 0.2s' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--gray-bg)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '900', color: 'var(--primary-red)' }}>{idx + 1}</div>
+                  <div>
+                     <div style={{ fontWeight: '900', fontSize: '18px' }}>{lesson.title}</div>
+                     <div style={{ fontSize: '13px', color: 'var(--secondary-text)', marginTop: '2px' }}>{lesson.description?.substring(0, 100)}{lesson.description?.length > 100 ? '...' : ''}</div>
                   </div>
                </div>
-             ))}
-             {lessons.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--secondary-text)' }}>No hay lecciones en este curso</div>}
-          </div>
+               <div style={{ display: 'flex', gap: '12px' }}>
+                  <button className="btn-secondary" style={{ padding: '10px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px' }} onClick={() => fetchLessonDetails(lesson.id)}><Eye size={18} /> PREGUNTAS</button>
+                  <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px' }} onClick={() => { setEditingLessonId(lesson.id); setNewLesson(lesson); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={18} /></button>
+                  <button className="btn-secondary" style={{ padding: '10px', borderRadius: '12px', color: 'var(--primary-red)' }} onClick={() => handleDeleteLesson(lesson.id)}><Trash size={18} /></button>
+               </div>
+            </div>
+          ))}
+          {lessons.length === 0 && <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--secondary-text)', border: '2px dashed var(--border-color)' }}>Aún no has añadido lecciones a este curso.</div>}
        </div>
     </motion.div>
   );
@@ -821,78 +892,197 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
     const filteredCourses = courses.filter(c => (c.title.toLowerCase().includes(adminCourseSearchQuery.toLowerCase()) || c.category?.toLowerCase().includes(adminCourseSearchQuery.toLowerCase())) && (adminSelectedCategory.includes('all') || adminSelectedCategory.includes(c.category)));
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'center' }}>
-            <div><h2 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>Cursos</h2><p style={{ color: 'var(--secondary-text)', margin: '5px 0 0' }}>Gestiona el contenido educativo de la plataforma</p></div>
-            <button onClick={() => { setEditingCourseId(null); setShowForm(true); }} className="btn-primary" style={{ padding: '15px 30px' }}><Plus size={22} /> NUEVO CURSO</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px', alignItems: 'center' }}>
+            <div>
+              <h2 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>Catálogo de Cursos</h2>
+              <p style={{ color: 'var(--secondary-text)', margin: '5px 0 0', fontSize: '15px' }}>Gestiona el contenido, precios y visibilidad educativa</p>
+            </div>
+            <button onClick={() => { setEditingCourseId(null); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn-primary" style={{ padding: '15px 35px', borderRadius: '18px', boxShadow: '0 10px 20px rgba(229, 57, 53, 0.2)' }}>
+              <Plus size={22} /> NUEVO CURSO
+            </button>
         </div>
+
         {showForm && (
-          <div className="card" style={{ marginBottom: '30px', padding: '30px', borderRadius: '24px', border: '2px solid var(--primary-red)' }}>
-            <h3 style={{ marginBottom: '25px' }}>{editingCourseId ? 'Editar Curso' : 'Crear Nuevo Curso'}</h3>
-            <form onSubmit={handleSaveCourse} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className="card" style={{ marginBottom: '45px', padding: '40px', borderRadius: '35px', border: '3px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 25px 50px rgba(0,0,0,0.15)' }}>
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '20px', marginBottom: '30px' }}>
+               <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Pencil size={24} color="var(--primary-red)" /> {editingCourseId ? 'EDITAR CURSO' : 'CREAR NUEVO CURSO'}
+               </h3>
+            </div>
+            
+            <form onSubmit={handleSaveCourse} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (ES)</label>
-                <input type="text" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '1px' }}>TÍTULO DEL CURSO (ESPAÑOL)</label>
+                <input type="text" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '16px', fontWeight: '700' }} required />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>TÍTULO (EN)</label>
-                <input type="text" value={newCourse.title_en} onChange={e => setNewCourse({...newCourse, title_en: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} required />
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '1px' }}>COURSE TITLE (ENGLISH)</label>
+                <input type="text" value={newCourse.title_en} onChange={e => setNewCourse({...newCourse, title_en: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontSize: '16px', fontWeight: '700' }} required />
               </div>
               <div style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>DESCRIPCIÓN (ES)</label>
-                <textarea value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '80px' }} required />
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '1px' }}>DESCRIPCIÓN COMPLETA (ESPAÑOL)</label>
+                <textarea value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '120px', fontSize: '15px', lineHeight: '1.6' }} required />
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>CATEGORÍA</label>
-                <select value={newCourse.category_id} onChange={e => setNewCourse({...newCourse, category_id: parseInt(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
+              <div style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)', letterSpacing: '1px' }}>FULL DESCRIPTION (ENGLISH)</label>
+                <textarea value={newCourse.description_en} onChange={e => setNewCourse({...newCourse, description_en: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', minHeight: '120px', fontSize: '15px', lineHeight: '1.6' }} required />
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>DIFICULTAD</label>
-                <select value={newCourse.difficulty} onChange={e => setNewCourse({...newCourse, difficulty: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}>
-                  <option value="beginner">Principiante</option>
-                  <option value="intermediate">Intermedio</option>
-                  <option value="advanced">Avanzado</option>
-                </select>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', gridColumn: 'span 2' }}>
+                 <div>
+                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>CATEGORÍA PRINCIPAL</label>
+                    <select 
+                      value={newCourse.category_id} 
+                      onChange={e => {
+                        const cat = categories.find(c => c.id === parseInt(e.target.value));
+                        setNewCourse({...newCourse, category_id: cat?.id || 1, category: cat?.name || 'General', category_en: cat?.name_en || 'General' });
+                      }} 
+                      style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800' }}
+                    >
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                 </div>
+                 <div>
+                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>ICONO REPRESENTATIVO</label>
+                    <select value={newCourse.icon} onChange={e => setNewCourse({...newCourse, icon: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800' }}>
+                       {Object.keys(icons).map(iconName => (
+                         <option key={iconName} value={iconName}>{iconName}</option>
+                       ))}
+                    </select>
+                 </div>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>PRECIO (TOROS)</label>
-                <input type="number" value={newCourse.points_price || 0} onChange={e => setNewCourse({...newCourse, points_price: parseInt(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '20px', gridColumn: 'span 2' }}>
+                 <div>
+                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>PRECIO (TRS)</label>
+                    <input type="number" value={newCourse.points_price} onChange={e => setNewCourse({...newCourse, points_price: parseInt(e.target.value)})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '900', textAlign: 'center' }} />
+                 </div>
+                 <div>
+                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>RECOMPENSA (PUNTOS)</label>
+                    <input type="number" value={newCourse.points_reward} onChange={e => setNewCourse({...newCourse, points_reward: parseInt(e.target.value)})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '900', textAlign: 'center' }} />
+                 </div>
+                 <div>
+                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>DIFICULTAD</label>
+                    <select value={newCourse.difficulty} onChange={e => setNewCourse({...newCourse, difficulty: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800' }}>
+                      <option value="beginner">Principiante</option>
+                      <option value="intermediate">Intermedio</option>
+                      <option value="advanced">Avanzado</option>
+                    </select>
+                 </div>
+                 <div>
+                    <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>NIVEL DE ACCESO</label>
+                    <select value={newCourse.access_level} onChange={e => setNewCourse({...newCourse, access_level: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800' }}>
+                      <option value="free">Gratis (Todos)</option>
+                      <option value="premium">Premium (VST)</option>
+                    </select>
+                 </div>
               </div>
+
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>VISIBILIDAD</label>
-                <select value={newCourse.visibility} onChange={e => setNewCourse({...newCourse, visibility: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }}>
-                  <option value="public">Público</option>
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>ESTADO DE VISIBILIDAD</label>
+                <select value={newCourse.visibility} onChange={e => setNewCourse({...newCourse, visibility: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800' }}>
+                  <option value="public">Público (Visible en App)</option>
                   <option value="private">Privado (Solo Admin)</option>
                 </select>
               </div>
+
               <div style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '800', fontSize: '12px' }}>IMAGEN DEL CURSO</label>
-                <input type="file" onChange={e => setNewCourse({...newCourse, imageFile: e.target.files?.[0] || null})} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)' }} />
-                {editingCourseId && !newCourse.imageFile && selectedCourse?.image_url && (
-                   <p style={{ fontSize: '11px', marginTop: '5px', color: 'var(--secondary-text)' }}>Imagen actual: {selectedCourse.image_url}</p>
-                )}
+                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>IMAGEN DE PORTADA</label>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(0,0,0,0.03)', padding: '20px', borderRadius: '20px', border: '2px dashed var(--border-color)' }}>
+                   <input type="file" onChange={e => setNewCourse({...newCourse, imageFile: e.target.files?.[0] || null})} style={{ flex: 1 }} />
+                   {editingCourseId && !newCourse.imageFile && selectedCourse?.image_url && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                         <span style={{ fontSize: '11px', fontWeight: '800' }}>IMG:</span>
+                         <img src={`${API_BASE_URL}${selectedCourse.image_url}`} style={{ height: '50px', borderRadius: '10px', boxShadow: '0 5px 10px rgba(0,0,0,0.1)' }} />
+                      </div>
+                   )}
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
-                <button type="submit" className="btn-primary" style={{ flex: 1 }}>{editingCourseId ? 'ACTUALIZAR' : 'CREAR'}</button>
-                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary" style={{ flex: 1 }}>CANCELAR</button>
+
+              <div style={{ display: 'flex', gap: '15px', marginTop: '20px', gridColumn: 'span 2' }}>
+                <button type="submit" className="btn-primary" style={{ flex: 2, padding: '18px', fontWeight: '900', fontSize: '16px', letterSpacing: '1px' }}>{editingCourseId ? 'ACTUALIZAR CURSO' : 'PUBLICAR CURSO'}</button>
+                <button type="button" onClick={() => {
+                   setShowForm(false);
+                   setEditingCourseId(null);
+                   setNewCourse({ title: '', title_en: '', description: '', description_en: '', points_reward: 100, points_price: 0, category_id: 1, category: 'General', category_en: 'General', difficulty: 'beginner', visibility: 'public', access_level: 'free', icon: 'Book', imageFile: null });
+                }} className="btn-secondary" style={{ flex: 1, padding: '18px', fontWeight: '800' }}>CANCELAR</button>
               </div>
             </form>
           </div>
         )}
-        <div style={{ display: 'flex', gap: '15px', marginBottom: '30px' }}>
-           <div style={{ position: 'relative', flexGrow: 1 }}><Search style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary-text)' }} size={20} /><input type="text" placeholder="Buscar cursos..." value={adminCourseSearchQuery} onChange={e => setAdminCourseSearchQuery(e.target.value)} style={{ width: '100%', padding: '15px 15px 15px 50px', borderRadius: '18px', border: '2px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)', fontSize: '16px', fontWeight: '600' }} /></div>
-           <FilterDropdown label="Categoría" icon={Filter} options={[{ value: 'all', label: 'Todas las Categorías' }, ...adminCategories.map(c => ({ value: c.name, label: c.name }))]} value={adminSelectedCategory} onChange={setAdminSelectedCategory} multi />
+
+        <div style={{ display: 'flex', gap: '15px', marginBottom: '35px', alignItems: 'center' }}>
+           <div style={{ position: 'relative', flexGrow: 1 }}>
+              <Search style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary-text)' }} size={22} />
+              <input 
+                type="text" 
+                placeholder="Buscar por título, categoría o descripción..." 
+                value={adminCourseSearchQuery}
+                onChange={e => setAdminCourseSearchQuery(e.target.value)}
+                style={{ width: '100%', padding: '18px 18px 18px 60px', borderRadius: '22px', border: '2px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)', fontSize: '17px', fontWeight: '700', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}
+              />
+           </div>
+           <FilterDropdown 
+              label="Filtrar Categoría" 
+              icon={Filter}
+              options={[{ value: 'all', label: 'Todas las Categorías' }, ...adminCategories.map(c => ({ value: c.name, label: c.name }))]}
+              value={adminSelectedCategory}
+              onChange={setAdminSelectedCategory}
+              multi
+           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '30px' }}>
            {filteredCourses.map(course => (
-             <motion.div key={course.id} whileHover={{ y: -5 }} className="card" style={{ padding: '25px', borderRadius: '28px', display: 'flex', flexDirection: 'column', gap: '15px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}><div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-red)' }}><CourseIcon name={course.icon} size={32} /></div><div style={{ display: 'flex', gap: '8px' }}><button onClick={() => { setEditingCourseId(course.id); setNewCourse({ ...course, imageFile: null }); setShowForm(true); }} className="btn-secondary" style={{ padding: '8px', borderRadius: '10px' }}><Pencil size={18} /></button><button onClick={() => handleDeleteCourse(course.id)} className="btn-secondary" style={{ padding: '8px', borderRadius: '10px', color: 'var(--primary-red)' }}><Trash size={18} /></button></div></div>
-                <div><h3 style={{ margin: 0, fontSize: '20px', fontWeight: '900' }}>{course.title}</h3><div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}><span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(229, 57, 53, 0.1)', color: 'var(--primary-red)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{course.difficulty}</span><span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--gray-bg)', color: 'var(--secondary-text)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{course.category}</span></div></div>
-                <p style={{ fontSize: '14px', color: 'var(--secondary-text)', lineHeight: '1.5', margin: 0, height: '42px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{course.description}</p>
-                <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Book size={16} color="var(--secondary-text)" /><span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--secondary-text)' }}>{course.lesson_count || 0} lecciones</span></div><button onClick={() => handleSelectCourse(course)} className="btn-secondary" style={{ padding: '8px 15px', fontSize: '12px', border: '2px solid var(--border-color)' }}>GESTIONAR <ChevronRight size={14} /></button></div>
+             <motion.div 
+              key={course.id} 
+              whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
+              className="card" 
+              style={{ padding: '30px', borderRadius: '32px', display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative', overflow: 'hidden', border: '2px solid var(--border-color)' }}
+             >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div style={{ width: '65px', height: '60px', borderRadius: '18px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-red)', border: '1px solid var(--border-color)' }}>
+                      <CourseIcon name={course.icon} size={35} />
+                   </div>
+                   <div style={{ display: 'flex', gap: '10px' }}>
+                      <button onClick={() => {
+                        setEditingCourseId(course.id);
+                        setSelectedCourse(course);
+                        setNewCourse({ ...course, imageFile: null });
+                        setShowForm(true);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }} className="btn-secondary" style={{ padding: '12px', borderRadius: '15px' }}><Pencil size={20} /></button>
+                      <button onClick={() => handleDeleteCourse(course.id)} className="btn-secondary" style={{ padding: '12px', borderRadius: '15px', color: 'var(--primary-red)' }}><Trash size={20} /></button>
+                   </div>
+                </div>
+
+                <div>
+                   <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '10px', fontWeight: '950', background: 'rgba(229, 57, 53, 0.12)', color: 'var(--primary-red)', padding: '5px 12px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{course.difficulty}</span>
+                      <span style={{ fontSize: '10px', fontWeight: '950', background: 'var(--gray-bg)', color: 'var(--secondary-text)', padding: '5px 12px', borderRadius: '10px', textTransform: 'uppercase' }}>{course.category}</span>
+                      {course.access_level === 'premium' && <span style={{ fontSize: '10px', fontWeight: '950', background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'black', padding: '5px 12px', borderRadius: '10px' }}>PREMIUM</span>}
+                   </div>
+                   <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '900', lineHeight: '1.2' }}>{course.title}</h3>
+                </div>
+
+                <p style={{ fontSize: '15px', color: 'var(--secondary-text)', lineHeight: '1.6', margin: 0, height: '48px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  {course.description}
+                </p>
+
+                <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid var(--gray-bg)', paddingTop: '20px' }}>
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                         <Book size={16} color="var(--primary-red)" />
+                         <span style={{ fontSize: '14px', fontWeight: '800' }}>{course.lesson_count || 0} lecciones</span>
+                      </div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: course.points_price > 0 ? '#FFC107' : 'var(--primary-green)' }}>
+                         {course.points_price > 0 ? `${course.points_price} TRS` : 'GRATIS'}
+                      </div>
+                   </div>
+                   <button onClick={() => handleSelectCourse(course)} className="btn-secondary" style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '13px', fontWeight: '900', background: 'white', border: '2px solid var(--border-color)' }}>GESTIONAR LECCIONES <ChevronRight size={16} /></button>
+                </div>
              </motion.div>
            ))}
         </div>
@@ -902,12 +1092,92 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
 
   const renderUsers = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}><h2>Usuarios ({users.length})</h2></div>
-       <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'var(--card-bg)', border: '2px solid var(--border-color)', borderRadius: '24px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-             <thead style={{ background: 'var(--gray-bg)', borderBottom: '2px solid var(--border-color)' }}><tr><th style={{ padding: '20px', fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)' }}>USUARIO</th><th style={{ padding: '20px', fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)' }}>STATS</th><th style={{ padding: '20px', fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)' }}>ROL</th><th style={{ padding: '20px', fontSize: '12px', fontWeight: '900', color: 'var(--secondary-text)' }}>ACCIONES</th></tr></thead>
-             <tbody>{users.map(user => (<tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)' }}><td style={{ padding: '20px' }}><div style={{ fontWeight: '800' }}>{user.name}</div><div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{user.email}</div></td><td style={{ padding: '20px' }}><div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}><div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><BullCoin size={14} /> <span style={{ fontWeight: '700' }}>{user.points}</span></div><div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Zap size={14} color="var(--primary-red)" /> <span style={{ fontWeight: '700' }}>{user.lives}</span></div><div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Trophy size={14} color="#FFD700" /> <span style={{ fontWeight: '700' }}>{user.level || 1}</span></div></div></td><td style={{ padding: '20px' }}><select value={user.role} onChange={(e) => handleUpdateUserRole(user.id, e.target.value)} style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: 'bold' }}><option value="user">USER</option><option value="admin">ADMIN</option></select></td><td style={{ padding: '20px' }}><button className="btn-secondary" style={{ padding: '8px 15px', fontSize: '12px' }} onClick={() => { const pts = prompt('Nuevos Toros (TRS):', user.points); const lives = prompt('Nuevas Vidas:', user.lives); if (pts !== null || lives !== null) { handleUpdateUserStats(user.id, { points: pts !== null ? parseInt(pts) : user.points, lives: lives !== null ? parseInt(lives) : user.lives }); } }}>EDITAR STATS</button></td></tr>))}</tbody>
-          </table>
+       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px', alignItems: 'center' }}>
+          <div>
+             <h2 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>Gestión de Usuarios</h2>
+             <p style={{ color: 'var(--secondary-text)', margin: '5px 0 0', fontSize: '15px' }}>Monitorea estadísticas, ajusta balances y gestiona roles de acceso</p>
+          </div>
+          <div className="card" style={{ padding: '10px 25px', borderRadius: '15px', background: 'var(--gray-bg)', fontWeight: '800' }}>
+             Total: <span style={{ color: 'var(--primary-red)' }}>{users.length}</span> activos
+          </div>
+       </div>
+
+       <div className="card" style={{ padding: 0, overflow: 'hidden', background: 'var(--card-bg)', border: '2px solid var(--border-color)', borderRadius: '32px', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+               <thead style={{ background: 'var(--gray-bg)', borderBottom: '2px solid var(--border-color)' }}>
+                  <tr>
+                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px' }}>PERFIL Y CONTACTO</th>
+                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px' }}>BALANCES ACTUALES</th>
+                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px' }}>ACCESO Y ROL</th>
+                     <th style={{ padding: '25px', fontSize: '11px', fontWeight: '950', color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'right' }}>ACCIONES</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  {users.map(user => (
+                    <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
+                       <td style={{ padding: '20px 25px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                             <div style={{ width: '45px', height: '45px', borderRadius: '15px', background: 'var(--gray-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: 'var(--secondary-text)', overflow: 'hidden' }}>
+                                {user.avatar_url ? <img src={`${API_BASE_URL}${user.avatar_url}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <UserIcon size={20} />}
+                             </div>
+                             <div>
+                                <div style={{ fontWeight: '800', fontSize: '16px' }}>{user.name}</div>
+                                <div style={{ fontSize: '13px', color: 'var(--secondary-text)' }}>{user.email}</div>
+                             </div>
+                          </div>
+                       </td>
+                       <td style={{ padding: '20px 25px' }}>
+                          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                             <div title="Toros (TRS)" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 193, 7, 0.1)', padding: '6px 12px', borderRadius: '10px', color: '#FF9800' }}>
+                                <BullCoin size={14} /> <span style={{ fontWeight: '900', fontSize: '14px' }}>{user.points}</span>
+                             </div>
+                             <div title="Vidas" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(229, 57, 53, 0.1)', padding: '6px 12px', borderRadius: '10px', color: 'var(--primary-red)' }}>
+                                <Zap size={14} /> <span style={{ fontWeight: '900', fontSize: '14px' }}>{user.lives}</span>
+                             </div>
+                             <div title="Nivel" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(76, 175, 80, 0.1)', padding: '6px 12px', borderRadius: '10px', color: 'var(--primary-green)' }}>
+                                <Trophy size={14} /> <span style={{ fontWeight: '900', fontSize: '14px' }}>{user.level || 1}</span>
+                             </div>
+                          </div>
+                       </td>
+                       <td style={{ padding: '20px 25px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                             <select 
+                               value={user.role} 
+                               onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
+                               style={{ padding: '8px 12px', borderRadius: '10px', border: '2px solid var(--border-color)', background: 'var(--gray-bg)', color: 'var(--text-color)', fontWeight: '800', fontSize: '12px', textTransform: 'uppercase' }}
+                             >
+                                <option value="user">USER</option>
+                                <option value="admin">ADMIN</option>
+                             </select>
+                             {user.subscription_status === 'premium' && (
+                                <span style={{ background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'black', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '950' }}>PREMIUM</span>
+                             )}
+                          </div>
+                       </td>
+                       <td style={{ padding: '20px 25px', textAlign: 'right' }}>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ padding: '10px 18px', fontSize: '12px', fontWeight: '900', borderRadius: '12px', background: 'white', border: '2px solid var(--border-color)' }}
+                            onClick={() => {
+                               const pts = prompt('Nuevos Toros (TRS):', user.points);
+                               const lives = prompt('Nuevas Vidas:', user.lives);
+                               if (pts !== null || lives !== null) {
+                                  handleUpdateUserStats(user.id, { 
+                                     points: pts !== null ? parseInt(pts) : user.points,
+                                     lives: lives !== null ? parseInt(lives) : user.lives
+                                  });
+                               }
+                            }}
+                          >
+                             EDITAR BALANCE
+                          </button>
+                       </td>
+                    </tr>
+                  ))}
+               </tbody>
+            </table>
+          </div>
        </div>
     </motion.div>
   );
@@ -934,102 +1204,134 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
 
   const renderPages = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>Páginas CMS</h2>
+       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '35px', alignItems: 'center' }}>
+          <div>
+             <h2 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>Páginas del Sistema</h2>
+             <p style={{ color: 'var(--secondary-text)', margin: '5px 0 0', fontSize: '15px' }}>Diseña y publica contenido dinámico sin escribir código</p>
+          </div>
           <button className="btn-primary" onClick={async () => {
-             const title = prompt('Título de la página:');
-             const slug = prompt('Slug de la página (ej: terminos-y-condiciones):');
+             const title = prompt('Título de la nueva página:');
+             const slug = prompt('Slug identificador (ej: ayuda-premium):');
              if (title && slug) {
                 const res = await fetch(`${API_BASE_URL}/api/pages`, {
                    method: 'POST',
                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                    body: JSON.stringify({ title, slug, content: '[]', is_published: false })
                 });
-                if (res.ok) { fetchPages(); toast.success('Página creada'); }
+                if (res.ok) { fetchPages(); toast.success('Página inicializada'); }
              }
-          }}><Plus size={20} /> NUEVA PÁGINA</button>
+          }} style={{ padding: '15px 30px', borderRadius: '18px' }}><Plus size={20} /> NUEVA PÁGINA</button>
        </div>
 
        {editingCMSPage && (
-          <div className="card" style={{ marginBottom: '30px', padding: '30px', borderRadius: '24px', border: '2px solid var(--primary-red)' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+          <div className="card" style={{ marginBottom: '45px', padding: '40px', borderRadius: '35px', border: '3px solid var(--primary-red)', background: 'var(--card-bg)', boxShadow: '0 25px 50px rgba(0,0,0,0.15)' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px', borderBottom: '1px solid var(--border-color)', paddingBottom: '25px' }}>
                 <div>
-                   <h3 style={{ margin: 0 }}>Diseñador Visual: {editingCMSPage.title}</h3>
-                   <p style={{ color: 'var(--secondary-text)', fontSize: '14px' }}>Añade y organiza bloques para construir tu página</p>
+                   <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '950', color: 'var(--primary-red)' }}>BUILDER: {editingCMSPage.title.toUpperCase()}</h3>
+                   <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                      <code style={{ background: 'var(--gray-bg)', padding: '4px 10px', borderRadius: '8px', fontSize: '12px' }}>/{editingCMSPage.slug}</code>
+                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                   <button onClick={handleSaveCMSContent} className="btn-primary" style={{ padding: '10px 25px' }}>GUARDAR CAMBIOS</button>
-                   <button onClick={() => setEditingCMSPage(null)} className="btn-secondary">CANCELAR</button>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                   <button onClick={handleSaveCMSContent} className="btn-primary" style={{ padding: '12px 30px', fontSize: '14px' }}>GUARDAR CAMBIOS</button>
+                   <button onClick={() => setEditingCMSPage(null)} className="btn-secondary" style={{ padding: '12px 25px' }}>SALIR</button>
                 </div>
              </div>
 
-             <div style={{ background: 'var(--gray-bg)', padding: '30px', borderRadius: '20px', minHeight: '300px', display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+             <div style={{ background: 'var(--gray-bg)', padding: '40px', borderRadius: '25px', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '35px', border: '1px solid var(--border-color)' }}>
                 {cmsBlocks.map((block, idx) => (
-                  <motion.div key={idx} layout className="card" style={{ padding: '20px', position: 'relative', border: '2px solid transparent', hover: { borderColor: 'var(--primary-red)' } }}>
-                     <div style={{ position: 'absolute', right: '15px', top: '15px', display: 'flex', gap: '5px' }}>
-                        <button onClick={() => moveBlock(idx, 'up')} style={{ padding: '5px', borderRadius: '5px', background: 'var(--gray-bg)', border: 'none', cursor: 'pointer' }}><ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} /></button>
-                        <button onClick={() => moveBlock(idx, 'down')} style={{ padding: '5px', borderRadius: '5px', background: 'var(--gray-bg)', border: 'none', cursor: 'pointer' }}><ChevronDown size={14} /></button>
-                        <button onClick={() => removeBlock(idx)} style={{ padding: '5px', borderRadius: '5px', background: 'rgba(229, 57, 53, 0.1)', color: 'var(--primary-red)', border: 'none', cursor: 'pointer' }}><Trash size={14} /></button>
+                  <motion.div 
+                    key={idx} 
+                    layout 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="card" 
+                    style={{ padding: '25px', position: 'relative', border: '2px solid transparent', transition: 'all 0.3s', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}
+                  >
+                     <div style={{ position: 'absolute', right: '15px', top: '15px', display: 'flex', gap: '8px', zIndex: 10 }}>
+                        <button onClick={() => moveBlock(idx, 'up')} style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'var(--gray-bg)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronDown size={14} style={{ transform: 'rotate(180deg)' }} /></button>
+                        <button onClick={() => moveBlock(idx, 'down')} style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'var(--gray-bg)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronDown size={14} /></button>
+                        <button onClick={() => removeBlock(idx)} style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(229, 57, 53, 0.1)', color: 'var(--primary-red)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash size={14} /></button>
                      </div>
                      
-                     <div style={{ marginBottom: '10px', fontSize: '10px', fontWeight: '900', color: 'var(--secondary-text)', textTransform: 'uppercase' }}>Bloque: {block.type}</div>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                        <div style={{ background: 'var(--primary-red)', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '950', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                           {block.type === 'heading' ? 'Encabezado' : block.type === 'text' ? 'Párrafo de Texto' : block.type === 'image' ? 'Contenido Visual' : 'Separador'}
+                        </div>
+                     </div>
 
                      {block.type === 'heading' && (
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                           <select value={block.level} onChange={e => updateBlock(idx, { level: parseInt(e.target.value) })} style={{ padding: '8px', borderRadius: '8px', background: 'var(--gray-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }}>
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                           <select value={block.level} onChange={e => updateBlock(idx, { level: parseInt(e.target.value) })} style={{ width: '80px', padding: '12px', borderRadius: '12px', background: 'var(--gray-bg)', color: 'var(--text-color)', border: '2px solid var(--border-color)', fontWeight: '900' }}>
                               <option value={1}>H1</option>
                               <option value={2}>H2</option>
                               <option value={3}>H3</option>
                            </select>
-                           <input type="text" value={block.text} onChange={e => updateBlock(idx, { text: e.target.value })} style={{ flex: 1, padding: '8px 15px', borderRadius: '10px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', fontSize: block.level === 1 ? '24px' : '18px', fontWeight: 'bold' }} />
+                           <input type="text" placeholder="Escribe el título aquí..." value={block.text} onChange={e => updateBlock(idx, { text: e.target.value })} style={{ flex: 1, padding: '12px 20px', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '2px solid var(--border-color)', fontSize: block.level === 1 ? '24px' : '18px', fontWeight: '800' }} />
                         </div>
                      )}
 
                      {block.type === 'text' && (
-                        <textarea value={block.content} onChange={e => updateBlock(idx, { content: e.target.value })} style={{ width: '100%', minHeight: '100px', padding: '15px', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)', lineHeight: '1.6' }} />
+                        <textarea placeholder="Redacta el contenido del bloque..." value={block.content} onChange={e => updateBlock(idx, { content: e.target.value })} style={{ width: '100%', minHeight: '150px', padding: '20px', borderRadius: '15px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '2px solid var(--border-color)', lineHeight: '1.7', fontSize: '16px' }} />
                      )}
 
                      {block.type === 'image' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                           <input type="text" placeholder="URL de la imagen" value={block.url} onChange={e => updateBlock(idx, { url: e.target.value })} style={{ padding: '10px', borderRadius: '10px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }} />
-                           <input type="text" placeholder="Texto alternativo" value={block.alt} onChange={e => updateBlock(idx, { alt: e.target.value })} style={{ padding: '10px', borderRadius: '10px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                           <div>
+                              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '11px', color: 'var(--secondary-text)' }}>URL DE LA IMAGEN</label>
+                              <input type="text" placeholder="https://..." value={block.url} onChange={e => updateBlock(idx, { url: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '2px solid var(--border-color)' }} />
+                           </div>
+                           <div>
+                              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '900', fontSize: '11px', color: 'var(--secondary-text)' }}>TEXTO ALT (SEO)</label>
+                              <input type="text" placeholder="Descripción de la imagen" value={block.alt} onChange={e => updateBlock(idx, { alt: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', color: 'var(--text-color)', border: '2px solid var(--border-color)' }} />
+                           </div>
                         </div>
                      )}
 
-                     {block.type === 'divider' && <div style={{ height: '2px', background: 'var(--border-color)', margin: '10px 0' }} />}
+                     {block.type === 'divider' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', height: '40px' }}>
+                           <div style={{ flex: 1, height: '2px', background: 'var(--border-color)' }} />
+                           <Minus size={20} color="var(--border-color)" />
+                           <div style={{ flex: 1, height: '2px', background: 'var(--border-color)' }} />
+                        </div>
+                     )}
                   </motion.div>
                 ))}
 
-                {cmsBlocks.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--secondary-text)', fontStyle: 'italic' }}>Tu página está vacía. Añade bloques abajo.</div>}
+                {cmsBlocks.length === 0 && <div style={{ textAlign: 'center', padding: '60px', color: 'var(--secondary-text)', fontStyle: 'italic', border: '2px dashed var(--border-color)', borderRadius: '20px' }}>Lienzo vacío. Utiliza los botones de abajo para añadir componentes.</div>}
              </div>
 
-             <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', padding: '20px', border: '2px dashed var(--border-color)', borderRadius: '20px' }}>
-                <button onClick={() => addBlock('heading')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Type size={18} /> TÍTULO</button>
-                <button onClick={() => addBlock('text')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18} /> TEXTO</button>
-                <button onClick={() => addBlock('image')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Image size={18} /> IMAGEN</button>
-                <button onClick={() => addBlock('divider')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Minus size={18} /> SEPARADOR</button>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '950', textAlign: 'center', color: 'var(--secondary-text)', letterSpacing: '2px' }}>AÑADIR NUEVO COMPONENTE</div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '25px', border: '2px dashed var(--border-color)', borderRadius: '25px', background: 'rgba(0,0,0,0.02)' }}>
+                   <button onClick={() => addBlock('heading')} className="btn-secondary" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px', width: '120px', borderRadius: '20px' }}><Type size={28} /> <span style={{ fontSize: '11px', fontWeight: '900' }}>ENCABEZADO</span></button>
+                   <button onClick={() => addBlock('text')} className="btn-secondary" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px', width: '120px', borderRadius: '20px' }}><FileText size={28} /> <span style={{ fontSize: '11px', fontWeight: '900' }}>TEXTO</span></button>
+                   <button onClick={() => addBlock('image')} className="btn-secondary" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px', width: '120px', borderRadius: '20px' }}><Image size={28} /> <span style={{ fontSize: '11px', fontWeight: '900' }}>IMAGEN</span></button>
+                   <button onClick={() => addBlock('divider')} className="btn-secondary" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px', width: '120px', borderRadius: '20px' }}><Minus size={28} /> <span style={{ fontSize: '11px', fontWeight: '900' }}>SEPARADOR</span></button>
+                </div>
              </div>
 
-             <div style={{ marginTop: '25px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input type="checkbox" checked={editingCMSPage.is_published} onChange={e => setEditingCMSPage({...editingCMSPage, is_published: e.target.checked})} />
-                <label style={{ fontWeight: 'bold' }}>PUBLICAR PÁGINA INMEDIATAMENTE</label>
+             <div style={{ marginTop: '35px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(76, 175, 80, 0.05)', padding: '20px', borderRadius: '15px' }}>
+                <input type="checkbox" checked={editingCMSPage.is_published} onChange={e => setEditingCMSPage({...editingCMSPage, is_published: e.target.checked})} style={{ width: '22px', height: '22px' }} />
+                <label style={{ fontWeight: '900', color: 'var(--primary-green)', cursor: 'pointer' }}>VISIBILIDAD: PUBLICADA INMEDIATAMENTE</label>
              </div>
           </div>
        )}
 
-       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' }}>
+       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '30px' }}>
           {pages.map(page => (
-            <div key={page.id} className="card" style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '15px', borderRadius: '24px' }}>
+            <div key={page.id} className="card" style={{ padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px', borderRadius: '32px', border: '2px solid var(--border-color)', transition: 'all 0.3s' }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ fontWeight: '900', fontSize: '20px' }}>{page.title}</div>
-                  <div style={{ fontSize: '10px', fontWeight: '900', padding: '4px 8px', borderRadius: '6px', background: page.is_published ? 'var(--primary-green)' : 'var(--gray-bg)', color: page.is_published ? 'white' : 'var(--secondary-text)' }}>
+                  <div style={{ fontWeight: '950', fontSize: '20px', lineHeight: '1.2' }}>{page.title}</div>
+                  <div style={{ fontSize: '10px', fontWeight: '950', padding: '5px 12px', borderRadius: '10px', background: page.is_published ? 'var(--primary-green)' : 'var(--gray-bg)', color: page.is_published ? 'white' : 'var(--secondary-text)', letterSpacing: '0.5px' }}>
                      {page.is_published ? 'PUBLICADA' : 'BORRADOR'}
                   </div>
                </div>
-               <div style={{ fontSize: '14px', color: 'var(--secondary-text)', fontWeight: 'bold' }}>Slug: <code style={{ color: 'var(--primary-red)' }}>/{page.slug}</code></div>
-               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button className="btn-secondary" style={{ flex: 1, fontWeight: '800' }} onClick={() => { 
+               <div style={{ fontSize: '14px', color: 'var(--secondary-text)', fontWeight: '700' }}>Ruta: <code style={{ color: 'var(--primary-red)', background: 'var(--gray-bg)', padding: '3px 8px', borderRadius: '6px' }}>/{page.slug}</code></div>
+               <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                  <button className="btn-secondary" style={{ flex: 1, fontWeight: '900', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'white' }} onClick={() => { 
                     setEditingCMSPage(page); 
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     try {
                       const parsed = JSON.parse(page.content);
                       setCmsBlocks(Array.isArray(parsed) ? parsed : []);
@@ -1037,8 +1339,8 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                       setCmsBlocks([{ type: 'text', content: page.content }]);
                     }
                   }}>DISEÑADOR VISUAL</button>
-                  <button className="btn-secondary" style={{ padding: '12px', color: 'var(--primary-red)', borderRadius: '12px' }} onClick={async () => {
-                     if (window.confirm('¿Eliminar esta página?')) {
+                  <button className="btn-secondary" style={{ padding: '12px', color: 'var(--primary-red)', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'white' }} onClick={async () => {
+                     if (window.confirm('¿Seguro que quieres eliminar esta página permanentemente?')) {
                         const res = await fetch(`${API_BASE_URL}/api/pages/${page.slug}`, {
                            method: 'DELETE',
                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
