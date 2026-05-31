@@ -507,7 +507,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                   <div key={app.id} onClick={() => handleSelectApp(app)} style={{ padding: '20px', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', background: selectedApp?.id === app.id ? 'var(--gray-bg)' : 'transparent', transition: 'all 0.2s' }}>
                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                         <div style={{ fontWeight: '800' }}>{app.user_name}</div>
-                        <div style={{ fontSize: '10px', fontWeight: '900', background: app.status === 'approved' ? '#4CAF50' : (app.status === 'rejected' ? '#F44336' : '#FF9800'), color: 'white', padding: '2px 8px', borderRadius: '10px', textTransform: 'uppercase' }}>{app.status}</div>
+                        <div style={{ fontSize: '10px', fontWeight: '900', background: app.status === 'approved' ? '#4CAF50' : (app.status === 'rejected' ? '#F44336' : '#FF9800'), color: '#FFFFFF', padding: '2px 8px', borderRadius: '10px', textTransform: 'uppercase' }}>{app.status}</div>
                      </div>
                      <div style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>{new Date(app.created_at).toLocaleDateString()} • {app.user_email}</div>
                   </div>
@@ -782,7 +782,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                         <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
                            <span style={{ fontSize: '10px', fontWeight: '900', background: 'rgba(229, 57, 53, 0.1)', color: 'var(--primary-red)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{q.difficulty}</span>
                            <span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--gray-bg)', color: 'var(--secondary-text)', padding: '4px 10px', borderRadius: '8px', textTransform: 'uppercase' }}>{q.type.replace('_', ' ')}</span>
-                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--primary-green)', color: 'white', padding: '4px 10px', borderRadius: '8px' }}>{q.points} PTS</span>
+                           <span style={{ fontSize: '10px', fontWeight: '900', background: 'var(--primary-green)', color: '#FFFFFF', padding: '4px 10px', borderRadius: '8px' }}>{q.points} PTS</span>
                         </div>
                         <div style={{ fontWeight: '800', fontSize: '19px', lineHeight: '1.4' }}>{q.text}</div>
                         <div style={{ color: 'var(--secondary-text)', fontSize: '14px', marginTop: '5px', fontStyle: 'italic' }}>{q.text_en}</div>
@@ -812,7 +812,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                        </div>
                      ))}
                      
-                     <form onSubmit={(e) => handleSaveAnswer(e, q.id)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '12px', marginTop: '10px', background: 'rgba(0,0,0,0.03)', padding: '15px', borderRadius: '16px' }}>
+                     <form onSubmit={(e) => handleSaveAnswer(e, q.id)} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '12px', marginTop: '10px', background: 'var(--gray-bg)', padding: '15px', borderRadius: '16px' }}>
                         <input type="text" placeholder="Respuesta (ES)" value={newAnswer.text} onChange={e => setNewAnswer({...newAnswer, text: e.target.value})} style={{ padding: '10px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)' }} required />
                         <input type="text" placeholder="Respuesta (EN)" value={newAnswer.text_en} onChange={e => setNewAnswer({...newAnswer, text_en: e.target.value})} style={{ padding: '10px 15px', borderRadius: '10px', border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)' }} required />
                         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '900', cursor: 'pointer' }}>
@@ -883,8 +883,8 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
           </div>
           
           <div style={{ display: 'flex', background: 'var(--gray-bg)', padding: '5px', borderRadius: '15px', gap: '5px' }}>
-             <button onClick={() => setCourseTab('lessons')} style={{ padding: '10px 25px', borderRadius: '12px', border: 'none', background: courseTab === 'lessons' ? 'white' : 'transparent', fontWeight: '800', cursor: 'pointer', boxShadow: courseTab === 'lessons' ? '0 5px 10px rgba(0,0,0,0.05)' : 'none' }}>LECCIONES</button>
-             <button onClick={() => { setCourseTab('users'); fetchEnrolledUsers(selectedCourse.id); }} style={{ padding: '10px 25px', borderRadius: '12px', border: 'none', background: courseTab === 'users' ? 'white' : 'transparent', fontWeight: '800', cursor: 'pointer', boxShadow: courseTab === 'users' ? '0 5px 10px rgba(0,0,0,0.05)' : 'none' }}>USUARIOS</button>
+             <button onClick={() => setCourseTab('lessons')} style={{ padding: '10px 25px', borderRadius: '12px', border: 'none', background: courseTab === 'lessons' ? 'var(--card-bg)' : 'transparent', fontWeight: '800', cursor: 'pointer', boxShadow: courseTab === 'lessons' ? '0 5px 10px rgba(0,0,0,0.05)' : 'none' }}>LECCIONES</button>
+             <button onClick={() => { setCourseTab('users'); fetchEnrolledUsers(selectedCourse.id); }} style={{ padding: '10px 25px', borderRadius: '12px', border: 'none', background: courseTab === 'users' ? 'var(--card-bg)' : 'transparent', fontWeight: '800', cursor: 'pointer', boxShadow: courseTab === 'users' ? '0 5px 10px rgba(0,0,0,0.05)' : 'none' }}>USUARIOS</button>
           </div>
        </div>
 
@@ -1102,7 +1102,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
 
               <div style={{ gridColumn: 'span 2' }}>
                 <label style={{ display: 'block', marginBottom: '10px', fontWeight: '900', fontSize: '12px', color: 'var(--secondary-text)' }}>IMAGEN DE PORTADA</label>
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'rgba(0,0,0,0.03)', padding: '20px', borderRadius: '20px', border: '2px dashed var(--border-color)' }}>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', background: 'var(--gray-bg)', padding: '20px', borderRadius: '20px', border: '2px dashed var(--border-color)' }}>
                    <input type="file" onChange={e => setNewCourse({...newCourse, imageFile: e.target.files?.[0] || null})} style={{ flex: 1 }} />
                    {editingCourseId && !newCourse.imageFile && selectedCourse?.image_url && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1174,7 +1174,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                    <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '10px', fontWeight: '950', background: 'rgba(229, 57, 53, 0.12)', color: 'var(--primary-red)', padding: '5px 12px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{course.difficulty}</span>
                       <span style={{ fontSize: '10px', fontWeight: '950', background: 'var(--gray-bg)', color: 'var(--secondary-text)', padding: '5px 12px', borderRadius: '10px', textTransform: 'uppercase' }}>{course.category}</span>
-                      {course.access_level === 'premium' && <span style={{ fontSize: '10px', fontWeight: '950', background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'black', padding: '5px 12px', borderRadius: '10px' }}>PREMIUM</span>}
+                      {course.access_level === 'premium' && <span style={{ fontSize: '10px', fontWeight: '950', background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'var(--text-color)', padding: '5px 12px', borderRadius: '10px' }}>PREMIUM</span>}
                    </div>
                    <h3 style={{ margin: 0, fontSize: '22px', fontWeight: '900', lineHeight: '1.2' }}>{course.title}</h3>
                 </div>
@@ -1193,7 +1193,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                          {course.points_price > 0 ? `${course.points_price} TRS` : 'GRATIS'}
                       </div>
                    </div>
-                   <button onClick={() => handleSelectCourse(course)} className="btn-secondary" style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '13px', fontWeight: '900', background: 'white', border: '2px solid var(--border-color)' }}>GESTIONAR LECCIONES <ChevronRight size={16} /></button>
+                   <button onClick={() => handleSelectCourse(course)} className="btn-secondary" style={{ padding: '12px 20px', borderRadius: '14px', fontSize: '13px', fontWeight: '900', background: 'var(--card-bg)', border: '2px solid var(--border-color)' }}>GESTIONAR LECCIONES <ChevronRight size={16} /></button>
                 </div>
              </motion.div>
            ))}
@@ -1263,14 +1263,14 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                                 <option value="admin">ADMIN</option>
                              </select>
                              {user.subscription_status === 'premium' && (
-                                <span style={{ background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'black', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '950' }}>PREMIUM</span>
+                                <span style={{ background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: 'var(--text-color)', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '950' }}>PREMIUM</span>
                              )}
                           </div>
                        </td>
                        <td style={{ padding: '20px 25px', textAlign: 'right' }}>
                           <button 
                             className="btn-secondary" 
-                            style={{ padding: '10px 18px', fontSize: '12px', fontWeight: '900', borderRadius: '12px', background: 'white', border: '2px solid var(--border-color)' }}
+                            style={{ padding: '10px 18px', fontSize: '12px', fontWeight: '900', borderRadius: '12px', background: 'var(--card-bg)', border: '2px solid var(--border-color)' }}
                             onClick={() => {
                                const pts = prompt('Nuevos Toros (TRS):', user.points);
                                const lives = prompt('Nuevas Vidas:', user.lives);
@@ -1367,7 +1367,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                      </div>
                      
                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                        <div style={{ background: 'var(--primary-red)', color: 'white', padding: '5px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '950', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        <div style={{ background: 'var(--primary-red)', color: '#FFFFFF', padding: '5px 12px', borderRadius: '8px', fontSize: '10px', fontWeight: '950', textTransform: 'uppercase', letterSpacing: '1px' }}>
                            {block.type === 'heading' ? 'Encabezado' : block.type === 'text' ? 'Párrafo de Texto' : block.type === 'image' ? 'Contenido Visual' : 'Separador'}
                         </div>
                      </div>
@@ -1415,7 +1415,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
 
              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ fontSize: '13px', fontWeight: '950', textAlign: 'center', color: 'var(--secondary-text)', letterSpacing: '2px' }}>AÑADIR NUEVO COMPONENTE</div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '25px', border: '2px dashed var(--border-color)', borderRadius: '25px', background: 'rgba(0,0,0,0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '25px', border: '2px dashed var(--border-color)', borderRadius: '25px', background: 'var(--gray-bg)' }}>
                    <button onClick={() => addBlock('heading')} className="btn-secondary" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px', width: '120px', borderRadius: '20px' }}><Type size={28} /> <span style={{ fontSize: '11px', fontWeight: '900' }}>ENCABEZADO</span></button>
                    <button onClick={() => addBlock('text')} className="btn-secondary" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px', width: '120px', borderRadius: '20px' }}><FileText size={28} /> <span style={{ fontSize: '11px', fontWeight: '900' }}>TEXTO</span></button>
                    <button onClick={() => addBlock('image')} className="btn-secondary" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px', width: '120px', borderRadius: '20px' }}><Image size={28} /> <span style={{ fontSize: '11px', fontWeight: '900' }}>IMAGEN</span></button>
@@ -1441,7 +1441,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                </div>
                <div style={{ fontSize: '14px', color: 'var(--secondary-text)', fontWeight: '700' }}>Ruta: <code style={{ color: 'var(--primary-red)', background: 'var(--gray-bg)', padding: '3px 8px', borderRadius: '6px' }}>/{page.slug}</code></div>
                <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
-                  <button className="btn-secondary" style={{ flex: 1, fontWeight: '900', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'white' }} onClick={() => { 
+                  <button className="btn-secondary" style={{ flex: 1, fontWeight: '900', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'var(--card-bg)' }} onClick={() => { 
                     setEditingCMSPage(page); 
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     try {
@@ -1451,7 +1451,7 @@ export default function Admin({ handleLogout }: { handleLogout?: () => void }) {
                       setCmsBlocks([{ type: 'text', content: page.content }]);
                     }
                   }}>DISEÑADOR VISUAL</button>
-                  <button className="btn-secondary" style={{ padding: '12px', color: 'var(--primary-red)', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'white' }} onClick={async () => {
+                  <button className="btn-secondary" style={{ padding: '12px', color: 'var(--primary-red)', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'var(--card-bg)' }} onClick={async () => {
                      if (window.confirm('¿Seguro que quieres eliminar esta página permanentemente?')) {
                         const res = await fetch(`${API_BASE_URL}/api/pages/${page.slug}`, {
                            method: 'DELETE',
