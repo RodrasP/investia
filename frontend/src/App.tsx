@@ -2,7 +2,7 @@ import { API_BASE_URL } from './config';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './App.css';
-import { Home, BookOpen, User as UserIcon, HelpCircle, CreditCard, Pencil, Moon, Sun, Phone, MapPin, MessageSquare, Info, Shield, Bell, Settings, LogOut, CheckCircle, FileText, Camera, ShoppingBag, ArrowRightLeft, Sparkles, Trophy, Zap } from 'lucide-react';
+import { Home, BookOpen, User as UserIcon, HelpCircle, CreditCard, Pencil, Moon, Sun, Phone, MapPin, MessageSquare, Info, Shield, Bell, Settings, LogOut, CheckCircle, FileText, Camera, ShoppingBag, ArrowRightLeft, Sparkles, Trophy, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
@@ -18,12 +18,14 @@ import Shop from './pages/Shop';
 import Exchange from './pages/Exchange';
 import Ranking from './pages/Ranking';
 import Community from './pages/Community';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import CookieConsent from './components/CookieConsent';
 import BullCoin from './components/BullCoin';
 import VestiaIcon from './components/VestiaIcon';
+import VestiaBill from './components/VestiaBill';
 
 const PageTransition = ({ children }: { children: React.ReactNode }) => (
   <motion.div
@@ -309,14 +311,14 @@ function Navbar({
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <div style={{ background: 'var(--primary-red)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: '900' }}>V</div>
+               <VestiaBill size={20} />
                <span style={{ fontWeight: '900', fontSize: '15px', color: 'var(--text-color)' }}>{(user.vestias || 0).toFixed(2)}</span>
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ position: 'relative' }}>
                 <motion.div animate={user.lives < 5 ? { opacity: [1, 0.5, 1] } : {}} transition={{ duration: 1.5, repeat: Infinity }}>
-                   <Zap size={20} color={user.lives > 0 ? "var(--primary-red)" : "var(--secondary-text)"} fill={user.lives > 0 ? "var(--primary-red)" : "none"} />
+                   <Heart size={20} color={user.lives > 0 ? "var(--primary-red)" : "var(--secondary-text)"} fill={user.lives > 0 ? "var(--primary-red)" : "none"} />
                 </motion.div>
                 <div style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: '900' }}>{user.lives}</div>
               </div>
@@ -361,233 +363,6 @@ function Navbar({
   );
 }
 
-function Profile({ user, setUser, onLogout, language, t, toggleTheme }: any) {
-  const [isEditing, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState(user || {});
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar_url ? `${API_BASE_URL}${user.avatar_url}` : null);
-  const [file, setFile] = useState<File | null>(null);
-
-  const langObj = t?.[language] || t?.['es'] || {};
-
-  const handleSave = async () => {
-    const token = localStorage.getItem('token');
-    const uploadData = new FormData();
-    uploadData.append('name', formData.name);
-    uploadData.append('phone', formData.phone || '');
-    uploadData.append('bio', formData.bio || '');
-    uploadData.append('location', formData.location || '');
-    uploadData.append('telegram_user', formData.telegram_user || '');
-    if (file) uploadData.append('avatar', file);
-
-    try {
-      // First update profile data
-      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-        method: 'PATCH',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          bio: formData.bio,
-          location: formData.location,
-          telegram_user: formData.telegram_user
-        })
-      });
-
-      // Then update avatar if file exists
-      if (file) {
-        const avatarData = new FormData();
-        avatarData.append('avatar', file);
-        await fetch(`${API_BASE_URL}/api/auth/profile/avatar`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: avatarData
-        });
-      }
-
-      if (res.ok) {
-        const profileRes = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const profileData = await profileRes.json();
-        toast.success(language === 'es' ? 'Perfil actualizado' : 'Profile updated');
-        setUser(profileData);
-        localStorage.setItem('user', JSON.stringify(profileData));
-        setIsOpen(false);
-      }
-    } catch (err) {
-      toast.error('Error');
-    }
-  };
-
-  return (
-    <div className="container" style={{ marginTop: '40px', paddingBottom: '100px' }}>
-      <div className="flex-responsive" style={{ gap: '40px', alignItems: 'flex-start' }}>
-        {/* Left Side: Profile Card */}
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '32px', border: '2px solid var(--border-color)', textAlign: 'center' }}
-          >
-            <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 25px' }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '32px', overflow: 'hidden', background: 'var(--gray-bg)', border: '4px solid var(--primary-red)' }}>
-                {avatarPreview ? (
-                  <img src={avatarPreview.startsWith('http') ? avatarPreview : `${API_BASE_URL}${avatarPreview}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary-text)' }}><UserIcon size={50} /></div>
-                )}
-              </div>
-              {isEditing && (
-                <label style={{ position: 'absolute', bottom: '-10px', right: '-10px', background: 'var(--primary-red)', color: 'white', width: '35px', height: '35px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
-                  <Camera size={18} />
-                  <input type="file" hidden onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) {
-                      setFile(f);
-                      setAvatarPreview(URL.createObjectURL(f));
-                    }
-                  }} />
-                </label>
-              )}
-            </div>
-
-            <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'var(--text-color)', marginBottom: '5px' }}>{user.name}</h2>
-            <p style={{ color: 'var(--secondary-text)', fontSize: '14px', marginBottom: '25px' }}>{user.email}</p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', marginBottom: '15px' }}>
-              <StatCard icon={<BullCoin size={20} />} value={Math.floor(user.points || 0)} label="Toros" />
-              <StatCard icon={<div style={{ background: 'var(--primary-red)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: '900' }}>V</div>} value={(user.vestias || 0).toFixed(1)} label="Vestias" />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', marginBottom: '30px' }}>
-              <StatCard icon={<Zap size={20} color="var(--primary-red)" />} value={user.lives || 0} label="Vidas" />
-              <StatCard icon={<Trophy size={20} color="#FFD700" />} value={user.level || 1} label="Nivel" />
-            </div>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => isEditing ? handleSave() : setIsOpen(true)} className="btn-primary" style={{ flex: 1, padding: '12px' }}>
-                {isEditing ? (language === 'es' ? 'GUARDAR' : 'SAVE') : (language === 'es' ? 'EDITAR PERFIL' : 'EDIT PROFILE')}
-              </button>
-              <button onClick={onLogout} className="btn-secondary" style={{ padding: '12px' }}><LogOut size={20} /></button>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            style={{ marginTop: '20px', background: 'var(--card-bg)', padding: '30px', borderRadius: '24px', border: '2px solid var(--border-color)' }}
-          >
-            <h4 style={{ marginBottom: '20px', fontWeight: '900', color: 'var(--text-color)' }}>{language === 'es' ? 'Configuración' : 'Settings'}</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <SettingsOption icon={<Moon size={18} />} title={language === 'es' ? 'Modo Oscuro' : 'Dark Mode'} desc={language === 'es' ? 'Cambiar el tema visual' : 'Change visual theme'} btnText={language === 'es' ? 'Cambiar' : 'Change'} onClick={toggleTheme} />
-              <SettingsOption icon={<Shield size={18} />} title={language === 'es' ? 'Privacidad' : 'Privacy'} desc={language === 'es' ? 'Gestionar tus datos' : 'Manage your data'} btnText={language === 'es' ? 'Ver' : 'View'} />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Right Side: Details & Bio */}
-        <div style={{ flex: '2', minWidth: '350px' }}>
-           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            style={{ background: 'var(--card-bg)', padding: '40px', borderRadius: '32px', border: '2px solid var(--border-color)' }}
-          >
-             <h3 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-               <Info size={24} color="var(--primary-red)" /> {language === 'es' ? 'Información Detallada' : 'Detailed Information'}
-             </h3>
-
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                <ProfileField icon={<Phone size={18} />} label={language === 'es' ? 'Teléfono' : 'Phone'} value={user.phone} isEditing={isEditing} onChange={(v) => setFormData({...formData, phone: v})} placeholder="+34 ..." />
-                <ProfileField icon={<MapPin size={18} />} label={language === 'es' ? 'Ubicación' : 'Location'} value={user.location} isEditing={isEditing} onChange={(v) => setFormData({...formData, location: v})} placeholder="Madrid, España" />
-                <ProfileField icon={<MessageSquare size={18} />} label={language === 'es' ? 'Telegram' : 'Telegram'} value={user.telegram_user} isEditing={isEditing} onChange={(v) => setFormData({...formData, telegram_user: v})} placeholder="@usuario" />
-                <div style={{ gridColumn: 'span 2' }}>
-                  <ProfileField icon={<Pencil size={18} />} label="Bio" value={user.bio} isEditing={isEditing} isTextArea onChange={(v) => setFormData({...formData, bio: v})} placeholder="Cuéntanos sobre ti..." />
-                </div>
-             </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            style={{ marginTop: '20px', background: 'var(--accent-light)', padding: '30px', borderRadius: '24px', border: '1px solid var(--primary-red)' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <Sparkles color="var(--primary-red)" />
-              <div>
-                <h4 style={{ margin: 0, color: 'var(--primary-red)', fontWeight: '900' }}>{language === 'es' ? 'Tu Racha de Aprendizaje' : 'Your Learning Streak'}</h4>
-                <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-color)' }}>{language === 'es' ? 'Llevas 5 días seguidos aprendiendo. ¡No pares!' : 'You have been learning for 5 days in a row. Do not stop!'}</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProfileField({ icon, label, value, isEditing, isTextArea, onChange, placeholder }: any) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary-text)', fontSize: '13px', fontWeight: '800', textTransform: 'uppercase' }}>
-        {icon} {label}
-      </div>
-      {isEditing ? (
-        isTextArea ? (
-          <textarea 
-            className="btn-secondary"
-            style={{ width: '100%', minHeight: '100px', textAlign: 'left', textTransform: 'none', background: 'var(--gray-bg)', color: 'var(--text-color)', padding: '12px 20px', resize: 'vertical' }}
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-          />
-        ) : (
-          <input 
-            type="text"
-            className="btn-secondary"
-            style={{ width: '100%', textAlign: 'left', textTransform: 'none', background: 'var(--gray-bg)', color: 'var(--text-color)', padding: '12px 20px' }}
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-          />
-        )
-      ) : (
-        <div style={{ padding: '12px 0', borderBottom: '1px solid var(--border-color)', color: value ? 'var(--text-color)' : 'var(--secondary-text)', fontWeight: '600' }}>
-          {value || 'No especificado'}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StatCard({ icon, value, label }: { icon: any, value: any, label: string }) {
-  return (
-    <div style={{ background: 'var(--gray-bg)', padding: '20px', borderRadius: '20px', textAlign: 'center', border: '1px solid var(--border-color)' }}>
-      <div style={{ marginBottom: '5px' }}>{icon}</div>
-      <h4 style={{ margin: 0, fontSize: '24px', color: 'var(--text-color)' }}>{value}</h4>
-      <p style={{ margin: 0, fontSize: '11px', fontWeight: '900', color: 'var(--secondary-text)', textTransform: 'uppercase' }}>{label}</p>
-    </div>
-  );
-}
-
-function SettingsOption({ icon, title, desc, btnText, onClick }: { icon: any, title: string, desc: string, btnText: string, onClick?: () => void }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', background: 'var(--gray-bg)', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
-      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-        <div style={{ background: 'var(--card-bg)', padding: '10px', borderRadius: '12px', color: 'var(--primary-red)' }}>{icon}</div>
-        <div>
-          <h4 style={{ margin: 0, color: 'var(--text-color)' }}>{title}</h4>
-          <p style={{ margin: 0, fontSize: '13px', color: 'var(--secondary-text)' }}>{desc}</p>
-        </div>
-      </div>
-      <button className="btn-secondary" onClick={onClick} style={{ padding: '8px 20px', textTransform: 'none', fontSize: '14px' }}>{btnText}</button>
-    </div>
-  );
-}
 
 function AppContent({ 
   user, 
@@ -678,7 +453,7 @@ function AppContent({
             <Route path="/course/:courseId" element={<PageTransition><LearningPath user={user} setUser={setUser} language={language} getT={getT} t={t} /></PageTransition>} />
             <Route path="/lesson/:id" element={<PageTransition>{user ? <Lesson user={user} setUser={setUser} language={language} getT={getT} t={t} isCrazyMode={isCrazyMode} /> : <Navigate to="/login" />}</PageTransition>} />
 
-            <Route path="/admin" element={<PageTransition>{user?.role === 'admin' ? <Admin handleLogout={handleLogout} /> : <Navigate to="/" />}</PageTransition>} />
+            <Route path="/admin" element={<PageTransition>{user?.role === 'admin' ? <Admin user={user} setUser={setUser} /> : <Navigate to="/" />}</PageTransition>} />
             
             <Route path="/contact" element={<PageTransition><DynamicPage slug="contact" /></PageTransition>} />
             <Route path="/privacy" element={<PageTransition><DynamicPage slug="privacy" /></PageTransition>} />

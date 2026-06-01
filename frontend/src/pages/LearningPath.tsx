@@ -8,7 +8,7 @@ import {
   LineChart, Layers, Database, Cpu, Lightbulb
 } from 'lucide-react';
 import BullCoin from '../components/BullCoin';
-import VestiaIcon from '../components/VestiaIcon';
+import VestiaBill from '../components/VestiaBill';
 import { API_BASE_URL } from '../config';
 import toast from 'react-hot-toast';
 
@@ -255,7 +255,7 @@ export default function LearningPath({ user: currentUser, setUser, language, get
                   transition: 'all 0.2s'
                 }}
               >
-                <Zap size={16} fill="white" /> Saltar con 1 <VestiaIcon size={16} />
+                <Zap size={16} fill="white" /> Saltar con 1 <VestiaBill size={16} />
               </motion.button>
             </div>
           </motion.div>

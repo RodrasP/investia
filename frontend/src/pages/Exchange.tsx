@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, ArrowRightLeft, CheckCircle, Info } from 'luc
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import BullCoin from '../components/BullCoin';
-import VestiaIcon from '../components/VestiaIcon';
+import VestiaBill from '../components/VestiaBill';
 import Tutorial from '../components/Tutorial';
 
 export default function Exchange({ user, setUser, language = 'es' }: { user: any, setUser: any, language?: string }) {
@@ -146,7 +146,7 @@ export default function Exchange({ user, setUser, language = 'es' }: { user: any
             <div>
               <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--secondary-text)', textTransform: 'uppercase' }}>Precio Actual</div>
               <div style={{ fontSize: '36px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                1 <BullCoin size={28} /> = {currentPrice.toFixed(2)} <VestiaIcon size={24} />
+                1 <BullCoin size={28} /> = {currentPrice.toFixed(2)} <VestiaBill size={24} />
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -255,7 +255,7 @@ export default function Exchange({ user, setUser, language = 'es' }: { user: any
                   style={{ width: '100%', padding: '15px', borderRadius: '15px', border: '2px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-color)', fontSize: '18px', fontWeight: 'bold' }}
                 />
                 <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)' }}>
-                  {activeTab === 'buy' ? <VestiaIcon size={20} /> : <BullCoin size={20} />}
+                  {activeTab === 'buy' ? <VestiaBill size={20} /> : <BullCoin size={20} />}
                 </div>
               </div>
             </div>
@@ -271,7 +271,7 @@ export default function Exchange({ user, setUser, language = 'es' }: { user: any
                   ? `${(parseFloat(amount || '0') / currentPrice).toFixed(0)} TRS` 
                   : `${(parseFloat(amount || '0') * currentPrice).toFixed(2)} VST`
                 }
-                {activeTab === 'buy' ? <BullCoin size={20} /> : <VestiaIcon size={20} />}
+                {activeTab === 'buy' ? <BullCoin size={20} /> : <VestiaBill size={20} />}
               </div>
             </div>
           </div>

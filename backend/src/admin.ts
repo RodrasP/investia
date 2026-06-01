@@ -41,12 +41,12 @@ router.patch('/users/:id/role', verifyToken, verifyAdmin, (req, res) => {
   });
 });
 
-// Update user points, lives and subscription
+// Update user points, lives, vestias and subscription
 router.patch('/users/:id/stats', verifyToken, verifyAdmin, (req, res) => {
-  const { points, lives, subscription_status, premium_months } = req.body;
+  const { points, lives, vestias, subscription_status, premium_months } = req.body;
   const userId = req.params.id;
 
-  if (points === undefined && lives === undefined && subscription_status === undefined) {
+  if (points === undefined && lives === undefined && vestias === undefined && subscription_status === undefined) {
     return res.status(400).json({ message: 'Nothing to update' });
   }
 
@@ -66,6 +66,11 @@ router.patch('/users/:id/stats', verifyToken, verifyAdmin, (req, res) => {
     }
   }
 
+  if (vestias !== undefined) {
+    updates.push('vestias = ?');
+    params.push(vestias);
+  }
+
   if (subscription_status !== undefined) {
     if (!['free', 'premium'].includes(subscription_status)) {
       return res.status(400).json({ message: 'Invalid subscription status' });
@@ -74,7 +79,7 @@ router.patch('/users/:id/stats', verifyToken, verifyAdmin, (req, res) => {
     params.push(subscription_status);
 
     if (subscription_status === 'premium') {
-      const months = parseInt(premium_months, 10) || 1; // Default to 1 month if not provided
+      const months = parseInt(premium_months, 10) || 1;
       const expiryDate = new Date();
       expiryDate.setMonth(expiryDate.getMonth() + months);
       updates.push('subscription_expiry = ?');
@@ -85,7 +90,6 @@ router.patch('/users/:id/stats', verifyToken, verifyAdmin, (req, res) => {
   }
 
   params.push(userId);
-
   const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
 
   db.run(query, params, (err: any) => {

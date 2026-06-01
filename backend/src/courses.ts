@@ -707,96 +707,68 @@ router.get('/lessons/:id', (req, res) => {
   const handleFetch = (stars: number, cooldownActive: boolean) => {
     db.get(`
       SELECT l.*, c.title as course_title, c.id as course_id
-      FROM lessons l 
-      JOIN courses c ON l.course_id = c.id 
+      FROM lessons l
+      JOIN courses c ON l.course_id = c.id
       WHERE l.id = ?
     `, [lessonId], (err: any, lesson: any) => {
       if (err || !lesson) return res.status(404).json({ message: 'Lesson not found' });
-      
-      const fetchQuestions = (stars: number, cooldownActive: boolean) => {
-        let query = 'SELECT * FROM questions WHERE lesson_id = ?';
-        let params: any[] = [lessonId];
 
-        if (!isAdmin) {
-          // Map stars to difficulty for regular users
-          let targetDifficulty = 'easy';
-          if (stars === 1) targetDifficulty = 'medium';
-          if (stars >= 2) targetDifficulty = 'hard';
-          query += ' AND difficulty = ?';
-          params.push(targetDifficulty);
+      let query = 'SELECT * FROM questions WHERE lesson_id = ?';
+      let params: any[] = [lessonId];
+
+      if (!isAdmin) {
+        // Map stars to difficulty for regular users
+        let targetDifficulty = 'easy';
+        if (stars === 1) targetDifficulty = 'medium';
+        if (stars >= 2) targetDifficulty = 'hard';
+        query += ' AND difficulty = ?';
+        params.push(targetDifficulty);
+      }
+
+      db.all(query, params, (err: any, questions: any[]) => {
+        if (err) return res.status(500).json({ message: 'Error fetching questions' });
+
+        if (questions.length === 0) {
+          return res.json({ ...lesson, questions: [], isCompleted: false, stars, cooldownActive });
         }
 
-        db.all(query, params, (err: any, questions: any[]) => {
-          if (err) return res.status(500).json({ message: 'Error fetching questions' });
-          
-          if (!isAdmin && (questions || []).length === 0) {
-             return res.json({ ...lesson, questions: [], isCompleted: false, stars, cooldownActive });
-          }
+        const questionIds = questions.map(q => q.id);
+        db.all(`SELECT * FROM answers WHERE question_id IN (${questionIds.join(',')})`, [], (err: any, answers: any[]) => {
+          if (err) return res.status(500).json({ message: 'Error fetching answers' });
 
-          const questionIds = questions.map(q => q.id);
-          if (questionIds.length === 0) {
-            return res.json({ ...lesson, questions: [], isCompleted: false, stars, cooldownActive });
-          }
+          const respondWithQuestions = (isCompleted: boolean) => {
+            const correctlyAnsweredIds: number[] = [];
 
-          db.all(`SELECT * FROM answers WHERE question_id IN (${questionIds.join(',')})`, [], (err: any, answers: any[]) => {
-            if (err) return res.status(500).json({ message: 'Error fetching answers' });
-            
-            const respondWithQuestions = (isCompleted: boolean) => {
-              if (userId) {
-                db.all(`SELECT question_id, answer_id FROM user_answers WHERE user_id = ? AND is_correct = 1 AND question_id IN (${questionIds.join(',')})`, [userId], (err: any, correctAnswers: any[]) => {
-                  const correctlyAnsweredIds = (correctAnswers || []).map(ca => ca.question_id);
-                  const questionsWithAnswers = questions.map(q => {
-                    const prevAnswer = (correctAnswers || []).find(ca => ca.question_id === q.id);
-                    return {
-                      ...q,
-                      answers: (answers || []).filter(a => a.question_id === q.id),
-                      isAlreadyCorrect: correctlyAnsweredIds.includes(q.id),
-                      previousAnswerId: prevAnswer ? prevAnswer.answer_id : null
-                    };
-                  });
-                  res.json({ ...lesson, questions: questionsWithAnswers, isCompleted, stars, cooldownActive });
-                });
-              } else {
-                const questionsWithAnswers = questions.map(q => ({
-                  ...q,
-                  answers: (answers || []).filter(a => a.question_id === q.id),
-                  isAlreadyCorrect: false
-                }));
-                res.json({ ...lesson, questions: questionsWithAnswers, isCompleted, stars, cooldownActive });
-              }
+            const finishResponse = () => {
+              const questionsWithAnswers = questions.map(q => ({
+                ...q,
+                answers: (answers || []).filter(a => a.question_id === q.id),
+                isAlreadyCorrect: correctlyAnsweredIds.includes(q.id)
+              }));
+              res.json({ ...lesson, questions: questionsWithAnswers, isCompleted, stars, cooldownActive });
             };
 
             if (userId) {
-              db.get('SELECT id FROM user_progress WHERE user_id = ? AND lesson_id = ? AND level = ?', [userId, lessonId, stars], (err: any, progress: any) => {
-                respondWithQuestions(!!progress);
+              db.all(`SELECT question_id FROM user_answers WHERE user_id = ? AND is_correct = 1 AND question_id IN (${questionIds.join(',')})`, [userId], (err: any, correctAnswers: any[]) => {
+                if (!err && correctAnswers) {
+                  correctAnswers.forEach(ca => correctlyAnsweredIds.push(ca.question_id));
+                }
+                finishResponse();
               });
             } else {
-              respondWithQuestions(false);
+              finishResponse();
             }
-          });
-        });
-      };
+          };
 
-      if (userId) {
-        db.get('SELECT stars, last_completed_at FROM user_completed_courses WHERE user_id = ? AND course_id = ?', [userId, lesson.course_id], (err: any, completedCourse: any) => {
-          const stars = completedCourse?.stars || 0;
-          let cooldownActive = false;
-          
-          if (stars > 0 && stars < 3 && completedCourse?.last_completed_at) {
-            const lastCompleted = new Date(completedCourse.last_completed_at);
-            const now = new Date();
-            const diffHours = (now.getTime() - lastCompleted.getTime()) / (1000 * 60 * 60);
-            if (diffHours < 5) {
-              cooldownActive = true;
-            }
+          if (userId) {
+            db.get('SELECT id FROM user_progress WHERE user_id = ? AND lesson_id = ? AND level = ?', [userId, lessonId, stars], (err: any, progress: any) => {
+              respondWithQuestions(!!progress);
+            });
+          } else {
+            respondWithQuestions(false);
           }
-          
-          const levelToShow = (cooldownActive && stars > 0) ? stars - 1 : Math.min(stars, 2);
-          fetchQuestions(levelToShow, cooldownActive);
         });
-      } else {
-        fetchQuestions(0, false);
-      }
+      });
     });
   };
 
@@ -806,7 +778,22 @@ router.get('/lessons/:id', (req, res) => {
       userId = (decoded as any).id;
       db.get('SELECT role FROM users WHERE id = ?', [userId], (err: any, user: any) => {
         isAdmin = user?.role === 'admin';
-        handleFetch(0, false);
+
+        if (isAdmin) {
+          handleFetch(0, false); // Admin gets all (filtered by isAdmin flag in handleFetch)
+        } else {
+          db.get('SELECT stars, last_completed_at FROM user_completed_courses WHERE user_id = ? AND course_id = (SELECT course_id FROM lessons WHERE id = ?)', [userId, lessonId], (err: any, completedCourse: any) => {
+            const stars = completedCourse?.stars || 0;
+            let cooldownActive = false;
+            if (stars > 0 && stars < 3 && completedCourse?.last_completed_at) {
+              const lastCompleted = new Date(completedCourse.last_completed_at);
+              const diffHours = (new Date().getTime() - lastCompleted.getTime()) / (1000 * 60 * 60);
+              if (diffHours < 5) cooldownActive = true;
+            }
+            const levelToShow = (cooldownActive && stars > 0) ? stars - 1 : Math.min(stars, 2);
+            handleFetch(levelToShow, cooldownActive);
+          });
+        }
       });
     } catch (e) {
       handleFetch(0, false);
@@ -1034,132 +1021,119 @@ router.get('/:id', (req, res) => {
 
   const fetchCourseDetails = (isAdmin: boolean, userId: number | null) => {
     try {
-      console.log(`Fetching course details for id: ${courseId}, userId: ${userId}, isAdmin: ${isAdmin}`);
+      console.log(`[GET /api/courses/${courseId}] Fetching details. userId=${userId}, isAdmin=${isAdmin}`);
+
       db.get('SELECT * FROM courses WHERE id = ?', [courseId], (err: any, course: any) => {
         if (err) {
-          console.error('Database error fetching course:', err);
-          return res.status(500).json({ message: 'Database error fetching course' });
+          console.error('[GET /api/courses/:id] Database error fetching course:', err);
+          return res.status(500).json({ message: 'Error en la base de datos al obtener el curso' });
         }
-        if (!course) return res.status(404).json({ message: 'Course not found' });
-        
-        if (course.visibility === 'private' && !isAdmin) {
-          return res.status(403).json({ message: 'Access denied' });
+        if (!course) {
+          console.warn(`[GET /api/courses/:id] Course ${courseId} not found`);
+          return res.status(404).json({ message: 'Curso no encontrado' });
         }
 
+        // Admin always has access. Public courses always have access for basic details.
+        // Private courses require admin.
+        if (course.visibility === 'private' && !isAdmin) {
+          console.warn(`[GET /api/courses/:id] Access denied for private course ${courseId}. userId=${userId}`);
+          return res.status(403).json({ message: 'Acceso denegado a curso privado' });
+        }
+
+        // Check enrollment for premium courses
         const checkAccess = (callback: (hasAccess: boolean) => void) => {
           if (isAdmin || course.access_level === 'free') return callback(true);
           if (!userId) return callback(false);
 
-          db.get('SELECT role, subscription_status FROM users WHERE id = ?', [userId], (err: any, user: any) => {
+          db.get('SELECT subscription_status FROM users WHERE id = ?', [userId], (err: any, user: any) => {
             if (err) {
-              console.error('Error fetching user for access check:', err);
+              console.error('[GET /api/courses/:id] Error checking user subscription:', err);
               return callback(false);
             }
             if (user?.subscription_status === 'premium') return callback(true);
-            
+
             db.get('SELECT id FROM user_subscriptions WHERE user_id = ? AND course_id = ?', [userId, courseId], (err: any, sub: any) => {
-              if (err) {
-                console.error('Error fetching subscription:', err);
-                return callback(false);
-              }
-              callback(!!sub);
+               if (err) {
+                 console.error('[GET /api/courses/:id] Error checking course subscription:', err);
+                 return callback(false);
+               }
+               callback(!!sub);
             });
           });
         };
 
         checkAccess((hasAccess) => {
           if (!hasAccess && course.access_level === 'premium') {
-            console.log(`Access denied: course is premium and user ${userId} does not have access`);
-            return res.status(403).json({ message: 'Premium access required' });
+            console.warn(`[GET /api/courses/:id] Premium access required for course ${courseId}. userId=${userId}`);
+            return res.status(403).json({ message: 'Se requiere acceso Premium para este curso' });
           }
 
+          // Fetch Topics
           db.all('SELECT * FROM topics WHERE course_id = ? ORDER BY sort_order ASC', [courseId], (err: any, topics: any[]) => {
-            if (err) {
-              console.error('Error fetching topics:', err);
-              return res.status(500).json({ message: 'Error fetching topics' });
-            }
+            if (err) console.error('[GET /api/courses/:id] Error fetching topics:', err);
+
+            // Fetch Lessons
             db.all('SELECT * FROM lessons WHERE course_id = ? ORDER BY sort_order ASC', [courseId], (err: any, lessons: any[]) => {
               if (err) {
-                console.error('Error fetching lessons:', err);
-                return res.status(500).json({ message: 'Error fetching lessons' });
+                console.error('[GET /api/courses/:id] Error fetching lessons:', err);
+                return res.status(500).json({ message: 'Error al obtener las lecciones' });
               }
 
-              // Fetch question counts for each lesson
-              db.all(`
-                SELECT lesson_id, COUNT(*) as count 
-                FROM questions 
-                GROUP BY lesson_id
-              `, [], (err: any, qCounts: any[]) => {
+              // Fetch Question Counts per lesson
+              db.all('SELECT lesson_id, COUNT(*) as count FROM questions GROUP BY lesson_id', [], (err: any, qCounts: any[]) => {
                 const countsMap = (qCounts || []).reduce((acc: any, curr: any) => {
                   acc[curr.lesson_id] = curr.count;
                   return acc;
                 }, {});
 
-                const fetchProgress = (level: number, callback: (progressIds: number[]) => void) => {
-                  if (!userId) return callback([]);
-                  db.all('SELECT lesson_id FROM user_progress WHERE user_id = ? AND level = ?', [userId, level], (err: any, rows: any[]) => {
-                    if (err) {
-                      console.error('Error fetching progress:', err);
-                      return callback([]);
-                    }
-                    callback((rows || []).map(r => r.lesson_id));
-                  });
-                };
+                // Fetch User Progress (if userId provided)
+                const fetchUserSpecifics = (callback: (stars: number, levelToShow: number, cooldownActive: boolean, completedIds: number[], lastCompletedAt: string | null) => void) => {
+                  if (!userId) return callback(0, 0, false, [], null);
 
-                const fetchStars = (callback: (stars: number, cooldownActive: boolean, levelToShow: number) => void) => {
-                  if (!userId) return callback(0, false, 0);
-                  db.get('SELECT stars, last_completed_at FROM user_completed_courses WHERE user_id = ? AND course_id = ?', [userId, courseId], (err: any, row: any) => {
-                    if (err) {
-                      console.error('Error fetching stars:', err);
-                      return callback(0, false, 0);
-                    }
-                    const stars = row?.stars || 0;
+                  db.get('SELECT stars, last_completed_at FROM user_completed_courses WHERE user_id = ? AND course_id = ?', [userId, courseId], (err: any, compRow: any) => {
+                    const stars = compRow?.stars || 0;
                     let cooldownActive = false;
-                    if (stars > 0 && stars < 3 && row?.last_completed_at) {
-                      const lastCompleted = new Date(row.last_completed_at);
-                      const now = new Date();
-                      const diffHours = (now.getTime() - lastCompleted.getTime()) / (1000 * 60 * 60);
-                      if (diffHours < 5) {
-                        cooldownActive = true;
-                      }
+                    let levelToShow = 0;
+
+                    if (compRow?.last_completed_at && stars > 0 && stars < 3) {
+                      const lastCompleted = new Date(compRow.last_completed_at);
+                      const diffHours = (new Date().getTime() - lastCompleted.getTime()) / (1000 * 60 * 60);
+                      if (diffHours < 5) cooldownActive = true;
                     }
-                    const levelToShow = (cooldownActive && stars > 0) ? stars - 1 : Math.min(stars, 2);
-                    callback(stars, cooldownActive, levelToShow);
+
+                    levelToShow = (cooldownActive && stars > 0) ? stars - 1 : Math.min(stars, 2);
+
+                    db.all('SELECT lesson_id FROM user_progress WHERE user_id = ? AND level = ?', [userId, levelToShow], (err: any, progRows: any[]) => {
+                      const completedIds = (progRows || []).map(r => r.lesson_id);
+                      callback(stars, levelToShow, cooldownActive, completedIds, compRow?.last_completed_at || null);
+                    });
                   });
                 };
 
-                fetchStars((stars, cooldownActive, levelToShow) => {
-                  fetchProgress(levelToShow, (completedLessonIds) => {
-                    const lessonsWithStatus = (lessons || []).map(l => ({
-                      ...l,
-                      isCompleted: completedLessonIds.includes(l.id),
-                      questionCount: countsMap[l.id] || 0
-                    }));
-                    const topicsWithLessons = (topics || []).map(t => {
-                      const topicLessons = lessonsWithStatus.filter(l => l.topic_id === t.id);
-                      const isCompleted = topicLessons.length > 0 && topicLessons.every(l => l.isCompleted);
-                      return {
-                        ...t,
-                        lessons: topicLessons,
-                        isCompleted
-                      };
-                    });
+                fetchUserSpecifics((stars, levelToShow, cooldownActive, completedIds, lastCompletedAt) => {
+                  const lessonsWithStatus = (lessons || []).map(l => ({
+                    ...l,
+                    isCompleted: completedIds.includes(l.id),
+                    questionCount: countsMap[l.id] || 0
+                  }));
 
-                    // Get last_completed_at for cooldown timer
-                    db.get('SELECT last_completed_at FROM user_completed_courses WHERE user_id = ? AND course_id = ?', [userId, courseId], (err: any, row: any) => {
-                      if (err) console.error('Error fetching last_completed_at final:', err);
-                      const untrackedLessons = lessonsWithStatus.filter(l => !l.topic_id);
-                      res.json({ 
-                        ...course, 
-                        topics: topicsWithLessons, 
-                        untrackedLessons, 
-                        lessons: lessonsWithStatus,
-                        stars,
-                        currentLevel: levelToShow,
-                        cooldownActive,
-                        last_completed_at: row?.last_completed_at || null
-                      });
-                    });
+                  const topicsWithLessons = (topics || []).map(t => ({
+                    ...t,
+                    lessons: lessonsWithStatus.filter(l => l.topic_id === t.id),
+                    isCompleted: false // Logic could be added here if needed
+                  }));
+
+                  const untrackedLessons = lessonsWithStatus.filter(l => !l.topic_id);
+
+                  res.json({
+                    ...course,
+                    topics: topicsWithLessons,
+                    untrackedLessons,
+                    lessons: lessonsWithStatus,
+                    stars,
+                    currentLevel: levelToShow,
+                    cooldownActive,
+                    last_completed_at: lastCompletedAt
                   });
                 });
               });
@@ -1168,20 +1142,18 @@ router.get('/:id', (req, res) => {
         });
       });
     } catch (error) {
-
-      console.error('Unexpected error in fetchCourseDetails:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      console.error('[GET /api/courses/:id] Fatal error:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
     }
   };
 
   if (token && token !== 'null') {
     jwt.verify(token, getJwtSecret(), (err: any, decoded: any) => {
-      const userId = decoded?.id || null;
-      if (err) {
+      if (err || !decoded?.id) {
         fetchCourseDetails(false, null);
       } else {
-        db.get('SELECT role FROM users WHERE id = ?', [userId], (err: any, user: any) => {
-          fetchCourseDetails(user?.role === 'admin', userId);
+        db.get('SELECT role FROM users WHERE id = ?', [decoded.id], (err: any, user: any) => {
+          fetchCourseDetails(user?.role === 'admin', decoded.id);
         });
       }
     });
